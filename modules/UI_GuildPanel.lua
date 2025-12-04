@@ -198,7 +198,8 @@ function GP:RefreshGuilds()
 
     local xOffset = 0
     local tagsContainer = TamCalWindowGuildPanelTags
-    local containerWidth = tagsContainer and tagsContainer:GetWidth() or 680
+    local containerWidth = tagsContainer and tagsContainer:GetWidth() or 600
+    local maxTagWidth = 120 -- Max width per tag to fit 5 guilds
 
     for i = 1, numGuilds do
         local guildId = GetGuildId(i)
@@ -206,41 +207,47 @@ function GP:RefreshGuilds()
         local tag = self.guildTags[i]
 
         if tag and guildName and guildName ~= "" then
-            -- Calculate tag width based on name
-            local estimatedWidth = self:CalculateTagWidth(guildName)
+            -- Calculate tag width based on name, capped to max
+            local estimatedWidth = math.min(self:CalculateTagWidth(guildName), maxTagWidth)
 
-            -- Position tag
-            tag:ClearAnchors()
-            tag:SetAnchor(TOPLEFT, tagsContainer, TOPLEFT, xOffset, 0)
-            tag:SetWidth(estimatedWidth)
-            tag:SetHidden(false)
+            -- Skip if tag would overflow container
+            if xOffset + estimatedWidth > containerWidth then
+                tag:SetHidden(true)
+            else
+                -- Position tag
+                tag:ClearAnchors()
+                tag:SetAnchor(TOPLEFT, tagsContainer, TOPLEFT, xOffset, 0)
+                tag:SetWidth(estimatedWidth)
+                tag:SetHidden(false)
 
-            -- Store guild info
-            tag.guildId = guildId
-            tag.guildIndex = i
+                -- Store guild info
+                tag.guildId = guildId
+                tag.guildIndex = i
 
-            -- Update name
-            if tag.nameLabel then
-                -- Truncate if needed
-                local displayName = guildName
-                if #displayName > 20 then
-                    displayName = displayName:sub(1, 18) .. "..."
+                -- Update name
+                if tag.nameLabel then
+                    -- Truncate more aggressively to fit
+                    local displayName = guildName
+                    local maxChars = math.floor((estimatedWidth - 50) / 6) -- Adjust for padding
+                    if #displayName > maxChars then
+                        displayName = displayName:sub(1, maxChars - 2) .. ".."
+                    end
+                    tag.nameLabel:SetText(displayName)
                 end
-                tag.nameLabel:SetText(displayName)
+
+                -- Update color dot
+                if tag.colorDot then
+                    local guildColor = GUILD_COLORS[i] or GUILD_COLORS[1]
+                    tag.colorDot:SetColor(unpack(guildColor))
+                end
+
+                -- Update subscription state
+                local isSubscribed = subscriptions[guildId] == true
+                tag.subscribed = isSubscribed
+                self:UpdateTagCheckmark(tag, isSubscribed)
+
+                xOffset = xOffset + estimatedWidth + GUILD_TAG_SPACING
             end
-
-            -- Update color dot
-            if tag.colorDot then
-                local guildColor = GUILD_COLORS[i] or GUILD_COLORS[1]
-                tag.colorDot:SetColor(unpack(guildColor))
-            end
-
-            -- Update subscription state
-            local isSubscribed = subscriptions[guildId] == true
-            tag.subscribed = isSubscribed
-            self:UpdateTagCheckmark(tag, isSubscribed)
-
-            xOffset = xOffset + estimatedWidth + GUILD_TAG_SPACING
         end
     end
 end

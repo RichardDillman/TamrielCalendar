@@ -36,13 +36,14 @@ local COLORS = {
     -- Borders
     borderNormal = {58/255, 53/255, 48/255, 1},
     borderHover = {107/255, 91/255, 69/255, 1},
-    borderToday = {197/255, 165/255, 82/255, 1},
-    borderSelected = {212/255, 175/255, 55/255, 1},
+    borderToday = {212/255, 175/255, 55/255, 1},      -- Gold border for today
+    borderSelected = {100/255, 180/255, 255/255, 1},  -- Light blue border for selected
 
     -- Backgrounds
     cellBg = {30/255, 28/255, 25/255, 0.8},
     cellBgHover = {40/255, 38/255, 35/255, 0.9},
-    todayBg = {197/255, 165/255, 82/255, 0.15},
+    todayBg = {212/255, 175/255, 55/255, 0.2},        -- More visible gold tint for today
+    selectedBg = {100/255, 180/255, 255/255, 0.1},   -- Subtle blue tint for selected
 
     -- Category backgrounds (dimmed for pips)
     categoryBg = {
@@ -270,14 +271,19 @@ function MV:StyleDayCell(cell, isToday, isSelected, isCurrentMonth)
     local bg = cell.bg
     local dayNum = cell.dayNum
 
-    -- Background color
-    if isToday then
+    -- Background color - today gets gold tint, selected gets blue tint
+    if isToday and isSelected then
+        -- Both today and selected - blend colors
+        bg:SetCenterColor(156/255, 177/255, 155/255, 0.25)
+    elseif isSelected then
+        bg:SetCenterColor(unpack(COLORS.selectedBg))
+    elseif isToday then
         bg:SetCenterColor(unpack(COLORS.todayBg))
     else
         bg:SetCenterColor(unpack(COLORS.cellBg))
     end
 
-    -- Border color
+    -- Border color - selected takes priority with blue, today gets gold
     if isSelected then
         bg:SetEdgeColor(unpack(COLORS.borderSelected))
     elseif isToday then
