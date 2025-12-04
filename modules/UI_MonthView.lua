@@ -103,11 +103,7 @@ function MV:CreateWeekdayHeader()
     local cellWidth = header:GetWidth() / GRID_COLS
 
     for i = 1, GRID_COLS do
-        local label = CreateControlFromVirtual(
-            "TamCalWeekdayLabel" .. i,
-            header,
-            "ZO_LabelHeader"
-        )
+        local label = CreateControl("TamCalWeekdayLabel" .. i, header, CT_LABEL)
 
         label:SetDimensions(cellWidth, 24)
         label:SetAnchor(TOPLEFT, header, TOPLEFT, (i - 1) * cellWidth, 0)
@@ -116,6 +112,7 @@ function MV:CreateWeekdayHeader()
         label:SetVerticalAlignment(TEXT_ALIGN_CENTER)
         label:SetColor(unpack(COLORS.mutedText))
         label:SetFont("ZoFontGameSmall")
+        label:SetMouseEnabled(false) -- Prevent click issues
 
         self.weekdayLabels[i] = label
     end

@@ -7,6 +7,9 @@
 local TC = TamrielCalendar or {}
 TamrielCalendar = TC
 
+-- Set addon name early so all modules can use it for event registration
+TC.name = TC.name or "TamrielCalendar"
+
 TC.DateHelpers = {}
 local DH = TC.DateHelpers
 

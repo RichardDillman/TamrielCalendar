@@ -67,7 +67,6 @@ function GP:Initialize()
     if self.initialized then return end
 
     self:CreateGuildTags()
-    self:CreateLegend()
     self:RefreshGuilds()
 
     self.initialized = true

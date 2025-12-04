@@ -298,7 +298,7 @@
                 <!-- Content Area (holds all views) -->
                 <Control name="$(parent)Content">
                     <Anchor point="TOPLEFT" to="$(parent)NavBar" relativeTo="BOTTOMLEFT" offsetX="8" offsetY="4"/>
-                    <Anchor point="BOTTOMRIGHT" offsetX="-8" offsetY="-132"/>
+                    <Anchor point="BOTTOMRIGHT" offsetX="-8" offsetY="-104"/>
 
                     <Controls>
                         <!-- Month View -->
@@ -390,8 +390,8 @@
                 <!-- Guild Calendars Panel -->
                 <Control name="$(parent)GuildPanel">
                     <Dimensions y="60"/>
-                    <Anchor point="BOTTOMLEFT" offsetY="-88"/>
-                    <Anchor point="BOTTOMRIGHT" offsetY="-88"/>
+                    <Anchor point="BOTTOMLEFT" offsetY="-40"/>
+                    <Anchor point="BOTTOMRIGHT" offsetY="-40"/>
 
                     <Controls>
                         <!-- Section Header -->
@@ -424,17 +424,6 @@
                     </Controls>
                 </Control>
 
-                <!-- Category Legend -->
-                <Control name="$(parent)Legend">
-                    <Dimensions y="24"/>
-                    <Anchor point="BOTTOMLEFT" offsetY="-44"/>
-                    <Anchor point="BOTTOMRIGHT" offsetY="-44"/>
-
-                    <Controls>
-                        <!-- Legend items created dynamically -->
-                    </Controls>
-                </Control>
-
                 <!-- Action Bar -->
                 <Control name="$(parent)ActionBar">
                     <Dimensions y="40"/>
@@ -442,23 +431,6 @@
                     <Anchor point="BOTTOMRIGHT"/>
 
                     <Controls>
-                        <!-- Filter Button -->
-                        <Button name="$(parent)FilterBtn">
-                            <Dimensions x="80" y="28"/>
-                            <Anchor point="LEFT" offsetX="16"/>
-                            <NormalTexture textureFile="EsoUI/Art/Buttons/positiveButton_up.dds" textureCoords="0 1 0 1"/>
-                            <PressedTexture textureFile="EsoUI/Art/Buttons/positiveButton_mouseDown.dds" textureCoords="0 1 0 1"/>
-                            <MouseOverTexture textureFile="EsoUI/Art/Buttons/positiveButton_mouseOver.dds" textureCoords="0 1 0 1"/>
-                            <Controls>
-                                <Label name="$(parent)Label" font="ZoFontGameSmall" text="Filter">
-                                    <AnchorFill/>
-                                </Label>
-                            </Controls>
-                            <OnClicked>
-                                TamrielCalendar:OnFilterClicked()
-                            </OnClicked>
-                        </Button>
-
                         <!-- New Event Button -->
                         <Button name="$(parent)NewEventBtn">
                             <Dimensions x="100" y="28"/>
@@ -484,7 +456,7 @@
         <!-- EVENT FORM DIALOG                                   -->
         <!-- ================================================== -->
 
-        <TopLevelControl name="TamCalEventForm" hidden="true" clampedToScreen="true" movable="true" mouseEnabled="true">
+        <TopLevelControl name="TamCalEventForm" hidden="true" clampedToScreen="true" movable="true" mouseEnabled="true" level="2">
             <Dimensions x="400" y="480"/>
             <Anchor point="CENTER"/>
 
@@ -520,13 +492,13 @@
 
                     <Controls>
                         <!-- Title Input -->
-                        <Label name="$(parent)TitleLabel" font="ZoFontGameSmall" text="Title:">
+                        <Label name="$(parent)TitleLabel" font="ZoFontGameSmall" text="Title:" color="C5A552">
                             <Anchor point="TOPLEFT"/>
                         </Label>
                         <Backdrop name="$(parent)TitleBG" inherits="ZO_EditBackdrop">
                             <Dimensions y="28"/>
                             <Anchor point="TOPLEFT" to="$(parent)TitleLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
-                            <Anchor point="TOPRIGHT" to="$(parent)TitleLabel" relativeTo="BOTTOMRIGHT" offsetY="4"/>
+                            <Anchor point="RIGHT"/>
                         </Backdrop>
                         <EditBox name="$(parent)TitleInput" inherits="ZO_DefaultEditForBackdrop">
                             <Anchor point="TOPLEFT" to="$(parent)TitleBG" offsetX="4" offsetY="2"/>
@@ -534,13 +506,13 @@
                         </EditBox>
 
                         <!-- Description Input -->
-                        <Label name="$(parent)DescLabel" font="ZoFontGameSmall" text="Description:">
+                        <Label name="$(parent)DescLabel" font="ZoFontGameSmall" text="Description:" color="C5A552">
                             <Anchor point="TOPLEFT" to="$(parent)TitleBG" relativeTo="BOTTOMLEFT" offsetY="12"/>
                         </Label>
                         <Backdrop name="$(parent)DescBG" inherits="ZO_EditBackdrop">
                             <Dimensions y="60"/>
                             <Anchor point="TOPLEFT" to="$(parent)DescLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
-                            <Anchor point="TOPRIGHT" to="$(parent)DescLabel" relativeTo="BOTTOMRIGHT" offsetY="4"/>
+                            <Anchor point="RIGHT"/>
                         </Backdrop>
                         <EditBox name="$(parent)DescInput" inherits="ZO_DefaultEditForBackdrop" multiLine="true">
                             <Anchor point="TOPLEFT" to="$(parent)DescBG" offsetX="4" offsetY="2"/>
@@ -548,7 +520,7 @@
                         </EditBox>
 
                         <!-- Category Dropdown -->
-                        <Label name="$(parent)CategoryLabel" font="ZoFontGameSmall" text="Category:">
+                        <Label name="$(parent)CategoryLabel" font="ZoFontGameSmall" text="Category:" color="C5A552">
                             <Anchor point="TOPLEFT" to="$(parent)DescBG" relativeTo="BOTTOMLEFT" offsetY="12"/>
                         </Label>
                         <Control name="$(parent)CategoryDropdown">
@@ -558,27 +530,27 @@
                         </Control>
 
                         <!-- Date/Time Section -->
-                        <Label name="$(parent)DateLabel" font="ZoFontGameSmall" text="Start:">
+                        <Label name="$(parent)DateLabel" font="ZoFontGameSmall" text="Start:" color="C5A552">
                             <Anchor point="TOPLEFT" to="$(parent)CategoryDropdown" relativeTo="BOTTOMLEFT" offsetY="16"/>
                         </Label>
 
-                        <Label name="$(parent)StartDateDisplay" font="ZoFontGameSmall" color="C5A552">
-                            <Dimensions x="150" y="24"/>
-                            <Anchor point="TOPLEFT" to="$(parent)DateLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
+                        <Label name="$(parent)StartDateDisplay" font="ZoFontGameSmall" color="E8DCC8">
+                            <Dimensions x="200" y="24"/>
+                            <Anchor point="LEFT" to="$(parent)DateLabel" relativeTo="RIGHT" offsetX="8"/>
                         </Label>
 
-                        <Label name="$(parent)EndLabel" font="ZoFontGameSmall" text="End:">
-                            <Anchor point="TOPLEFT" to="$(parent)StartDateDisplay" relativeTo="BOTTOMLEFT" offsetY="8"/>
+                        <Label name="$(parent)EndLabel" font="ZoFontGameSmall" text="End:" color="C5A552">
+                            <Anchor point="TOPLEFT" to="$(parent)DateLabel" relativeTo="BOTTOMLEFT" offsetY="28"/>
                         </Label>
 
-                        <Label name="$(parent)EndDateDisplay" font="ZoFontGameSmall" color="C5A552">
-                            <Dimensions x="150" y="24"/>
-                            <Anchor point="TOPLEFT" to="$(parent)EndLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
+                        <Label name="$(parent)EndDateDisplay" font="ZoFontGameSmall" color="E8DCC8">
+                            <Dimensions x="200" y="24"/>
+                            <Anchor point="LEFT" to="$(parent)EndLabel" relativeTo="RIGHT" offsetX="8"/>
                         </Label>
 
                         <!-- Guild Selector (only shown if in a guild) -->
-                        <Label name="$(parent)GuildLabel" font="ZoFontGameSmall" text="Guild (optional):" hidden="true">
-                            <Anchor point="TOPLEFT" to="$(parent)EndDateDisplay" relativeTo="BOTTOMLEFT" offsetY="16"/>
+                        <Label name="$(parent)GuildLabel" font="ZoFontGameSmall" text="Guild (optional):" color="C5A552" hidden="true">
+                            <Anchor point="TOPLEFT" to="$(parent)EndLabel" relativeTo="BOTTOMLEFT" offsetY="16"/>
                         </Label>
                         <Control name="$(parent)GuildDropdown" hidden="true">
                             <Dimensions x="200" y="28"/>
