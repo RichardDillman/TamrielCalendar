@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tamriel Calendar - ESO Addon GUI Mockup</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: url('https://images.uesp.net/thumb/a/a2/ON-place-Hollow_City_02.jpg/1200px-ON-place-Hollow_City_02.jpg') center/cover fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      padding: 30px;
+      gap: 30px;
+    }
+
+    .view-label {
+      color: #ffd700;
+      font-size: 14px;
+      letter-spacing: 3px;
+      text-shadow: 0 2px 8px black, 0 0 20px rgba(0,0,0,0.8);
+      margin-bottom: -20px;
+      text-transform: uppercase;
+    }
+
+    .eso-panel {
+      background: linear-gradient(180deg, #1a1815 0%, #0d0c0a 100%);
+      border: 2px solid #8b7355;
+      border-radius: 4px;
+      width: 720px;
+      box-shadow: 
+        0 0 60px rgba(0,0,0,0.95),
+        inset 0 0 100px rgba(0,0,0,0.6),
+        0 0 3px #c5a552;
+      position: relative;
+    }
+
+    .eso-panel::before {
+      content: '';
+      position: absolute;
+      top: -4px; left: -4px; right: -4px; bottom: -4px;
+      border: 1px solid #4a3f2f;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #c5a552;
+    }
+    .corner-tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+    .corner-tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
+    .corner-bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
+    .corner-br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+    .panel-header {
+      background: linear-gradient(180deg, #2a2520 0%, #1a1815 100%);
+      border-bottom: 1px solid #8b7355;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      color: #d4af37;
+      font-size: 16px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    .close-btn {
+      width: 24px; height: 24px;
+      background: linear-gradient(180deg, #3a3530 0%, #2a2520 100%);
+      border: 1px solid #8b7355;
+      color: #c5a552;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      border-bottom: 1px solid #4a3f2f;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .nav-arrows { display: flex; gap: 6px; }
+
+    .nav-btn {
+      background: linear-gradient(180deg, #2a2520 0%, #1a1815 100%);
+      border: 1px solid #6b5b45;
+      color: #c5a552;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+    }
+
+    .current-period {
+      color: #e8dcc8;
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+
+    .view-toggles { display: flex; gap: 3px; }
+
+    .view-btn {
+      background: linear-gradient(180deg, #2a2520 0%, #1a1815 100%);
+      border: 1px solid #6b5b45;
+      color: #6b5b45;
+      padding: 5px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .view-btn.active {
+      background: linear-gradient(180deg, #3a3025 0%, #2a2015 100%);
+      border-color: #c5a552;
+      color: #d4af37;
+    }
+
+    .calendar-content { padding: 10px; }
+
+    /* MONTH VIEW */
+    .weekday-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 3px;
+    }
+
+    .weekday-name {
+      text-align: center;
+      color: #c5a552;
+      font-size: 10px;
+      padding: 5px 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .month-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .day-cell {
+      background: rgba(30, 28, 25, 0.6);
+      border: 1px solid #3a3530;
+      min-height: 52px;
+      padding: 3px;
+    }
+    .day-cell.other-month { opacity: 0.35; }
+    .day-cell.today {
+      border-color: #c5a552;
+      background: rgba(197, 165, 82, 0.1);
+      box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.2);
+    }
+
+    .day-number {
+      color: #a89880;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+    .today .day-number { color: #d4af37; font-weight: bold; }
+
+    .day-events { display: flex; flex-direction: column; gap: 2px; }
+
+    .event-pip {
+      font-size: 8px;
+      padding: 2px 4px;
+      border-radius: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-raid { background: #4a2020; color: #ff9999; border-left: 2px solid #ff6666; }
+    .event-party { background: #203a4a; color: #99ccff; border-left: 2px solid #6699ff; }
+    .event-training { background: #204a28; color: #99ff99; border-left: 2px solid #66ff66; }
+    .event-meeting { background: #4a4020; color: #ffdd99; border-left: 2px solid #ffcc66; }
+    .event-personal { background: #38204a; color: #cc99ff; border-left: 2px solid #9966ff; }
+
+    /* WEEK VIEW */
+    .week-grid {
+      display: grid;
+      grid-template-columns: 50px repeat(7, 1fr);
+      gap: 1px;
+      background: #3a3530;
+    }
+
+    .week-header-cell {
+      background: #2a2520;
+      padding: 6px 2px;
+      text-align: center;
+      color: #a89880;
+      font-size: 9px;
+    }
+    .week-header-cell.today-col { color: #d4af37; background: rgba(197, 165, 82, 0.1); }
+    .week-header-cell span { display: block; font-size: 13px; margin-top: 2px; }
+
+    .time-label {
+      background: #1a1815;
+      color: #6b5b45;
+      font-size: 9px;
+      padding: 3px;
+      text-align: right;
+    }
+
+    .week-hour-cell {
+      background: #1a1815;
+      min-height: 30px;
+      position: relative;
+    }
+    .week-hour-cell.today-col { background: rgba(197, 165, 82, 0.03); }
+
+    .week-event {
+      position: absolute;
+      left: 1px; right: 1px;
+      padding: 2px 3px;
+      font-size: 8px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    /* DAY VIEW */
+    .day-view-container { display: flex; gap: 12px; }
+
+    .day-schedule { flex: 1; }
+
+    .day-header {
+      color: #c5a552;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid #4a3f2f;
+      margin-bottom: 6px;
+    }
+
+    .hour-row {
+      display: flex;
+      border-bottom: 1px solid #2a2520;
+      min-height: 38px;
+    }
+
+    .hour-label {
+      width: 50px;
+      color: #6b5b45;
+      font-size: 10px;
+      padding: 3px 6px 3px 0;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .hour-content { flex: 1; padding: 3px; }
+
+    .day-event-block {
+      padding: 5px 8px;
+      border-radius: 3px;
+      margin-bottom: 3px;
+    }
+    .day-event-title { font-size: 10px; }
+    .day-event-time { font-size: 8px; opacity: 0.8; }
+
+    .day-sidebar {
+      width: 190px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid #4a3f2f;
+      padding: 10px;
+    }
+
+    .sidebar-title {
+      color: #c5a552;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #4a3f2f;
+    }
+
+    .event-detail-card {
+      background: rgba(30, 28, 25, 0.8);
+      border: 1px solid #3a3530;
+      padding: 8px;
+      margin-bottom: 6px;
+    }
+    .event-detail-title { color: #e8dcc8; font-size: 11px; margin-bottom: 3px; }
+    .event-detail-meta { color: #8b7355; font-size: 9px; margin-bottom: 4px; }
+    .event-detail-guild { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #a89880; }
+    .guild-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    /* GUILD PANEL */
+    .guild-panel {
+      border-top: 1px solid #4a3f2f;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .guild-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .guild-panel-title {
+      color: #c5a552;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .guild-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .guild-tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(30, 28, 25, 0.8);
+      border: 1px solid #3a3530;
+      padding: 3px 8px;
+      font-size: 9px;
+      color: #a89880;
+    }
+    .guild-tag.subscribed { border-color: #6b5b45; color: #e8dcc8; }
+    .guild-check { color: #66cc66; }
+
+    /* LEGEND */
+    .legend {
+      padding: 6px 12px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid #2a2520;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 8px; color: #8b7355; }
+    .legend-color { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* ACTION BAR */
+    .action-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 12px;
+      border-top: 1px solid #4a3f2f;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .action-btn {
+      background: linear-gradient(180deg, #3a3025 0%, #2a2015 100%);
+      border: 1px solid #6b5b45;
+      color: #c5a552;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .action-btn.primary { border-color: #c5a552; }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== MONTH VIEW ==================== -->
+  <div class="view-label">Month View</div>
+  <div class="eso-panel">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="panel-header">
+      <div class="panel-title">Tamriel Calendar</div>
+      <button class="close-btn">✕</button>
+    </div>
+
+    <div class="nav-bar">
+      <div class="nav-arrows">
+        <button class="nav-btn">◄</button>
+        <button class="nav-btn">Today</button>
+        <button class="nav-btn">►</button>
+      </div>
+      <div class="current-period">December 2025</div>
+      <div class="view-toggles">
+        <button class="view-btn">Day</button>
+        <button class="view-btn">Week</button>
+        <button class="view-btn active">Month</button>
+      </div>
+    </div>
+
+    <div class="calendar-content">
+      <div class="weekday-header">
+        <div class="weekday-name">Sun</div>
+        <div class="weekday-name">Mon</div>
+        <div class="weekday-name">Tue</div>
+        <div class="weekday-name">Wed</div>
+        <div class="weekday-name">Thu</div>
+        <div class="weekday-name">Fri</div>
+        <div class="weekday-name">Sat</div>
+      </div>
+      <div class="month-grid">
+        <div class="day-cell other-month"><div class="day-number">30</div></div>
+        <div class="day-cell"><div class="day-number">1</div></div>
+        <div class="day-cell"><div class="day-number">2</div></div>
+        <div class="day-cell"><div class="day-number">3</div></div>
+        <div class="day-cell today">
+          <div class="day-number">4</div>
+          <div class="day-events">
+            <div class="event-pip event-meeting">Guild Meeting</div>
+          </div>
+        </div>
+        <div class="day-cell"><div class="day-number">5</div></div>
+        <div class="day-cell">
+          <div class="day-number">6</div>
+          <div class="day-events">
+            <div class="event-pip event-raid">vRG Prog</div>
+          </div>
+        </div>
+        
+        <div class="day-cell">
+          <div class="day-number">7</div>
+          <div class="day-events">
+            <div class="event-pip event-training">Tank 101</div>
+          </div>
+        </div>
+        <div class="day-cell"><div class="day-number">8</div></div>
+        <div class="day-cell">
+          <div class="day-number">9</div>
+          <div class="day-events">
+            <div class="event-pip event-raid">vRG Prog</div>
+          </div>
+        </div>
+        <div class="day-cell"><div class="day-number">10</div></div>
+        <div class="day-cell"><div class="day-number">11</div></div>
+        <div class="day-cell">
+          <div class="day-number">12</div>
+          <div class="day-events">
+            <div class="event-pip event-party">Winter Bash</div>
+          </div>
+        </div>
+        <div class="day-cell">
+          <div class="day-number">13</div>
+          <div class="day-events">
+            <div class="event-pip event-raid">vRG Clear</div>
+          </div>
+        </div>
+        
+        <div class="day-cell">
+          <div class="day-number">14</div>
+          <div class="day-events">
+            <div class="event-pip event-training">Healer WS</div>
+          </div>
+        </div>
+        <div class="day-cell"><div class="day-number">15</div></div>
+        <div class="day-cell"><div class="day-number">16</div></div>
+        <div class="day-cell"><div class="day-number">17</div></div>
+        <div class="day-cell"><div class="day-number">18</div></div>
+        <div class="day-cell"><div class="day-number">19</div></div>
+        <div class="day-cell">
+          <div class="day-number">20</div>
+          <div class="day-events">
+            <div class="event-pip event-meeting">Officer Mtg</div>
+            <div class="event-pip event-raid">vSS Prog</div>
+          </div>
+        </div>
+        
+        <div class="day-cell"><div class="day-number">21</div></div>
+        <div class="day-cell"><div class="day-number">22</div></div>
+        <div class="day-cell"><div class="day-number">23</div></div>
+        <div class="day-cell"><div class="day-number">24</div></div>
+        <div class="day-cell">
+          <div class="day-number">25</div>
+          <div class="day-events">
+            <div class="event-pip event-party">Xmas Party</div>
+          </div>
+        </div>
+        <div class="day-cell"><div class="day-number">26</div></div>
+        <div class="day-cell"><div class="day-number">27</div></div>
+        
+        <div class="day-cell"><div class="day-number">28</div></div>
+        <div class="day-cell"><div class="day-number">29</div></div>
+        <div class="day-cell"><div class="day-number">30</div></div>
+        <div class="day-cell">
+          <div class="day-number">31</div>
+          <div class="day-events">
+            <div class="event-pip event-party">NYE Bash</div>
+          </div>
+        </div>
+        <div class="day-cell other-month"><div class="day-number">1</div></div>
+        <div class="day-cell other-month"><div class="day-number">2</div></div>
+        <div class="day-cell other-month"><div class="day-number">3</div></div>
+      </div>
+    </div>
+
+    <div class="guild-panel">
+      <div class="guild-panel-header">
+        <div class="guild-panel-title">Guild Calendars</div>
+        <button class="nav-btn">↻ Sync</button>
+      </div>
+      <div class="guild-list">
+        <div class="guild-tag subscribed">
+          <span class="guild-check">✓</span>
+          <span class="guild-dot" style="background:#e74c3c"></span>
+          Tamriel Raiders
+        </div>
+        <div class="guild-tag subscribed">
+          <span class="guild-check">✓</span>
+          <span class="guild-dot" style="background:#3498db"></span>
+          Merchant Union
+        </div>
+        <div class="guild-tag">
+          <span class="guild-dot" style="background:#9b59b6"></span>
+          Crafting Circle
+        </div>
+        <div class="guild-tag">
+          <span class="guild-dot" style="background:#27ae60"></span>
+          PvP Alliance
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#4a2020"></div>Raid</div>
+      <div class="legend-item"><div class="legend-color" style="background:#203a4a"></div>Party</div>
+      <div class="legend-item"><div class="legend-color" style="background:#204a28"></div>Training</div>
+      <div class="legend-item"><div class="legend-color" style="background:#4a4020"></div>Meeting</div>
+      <div class="legend-item"><div class="legend-color" style="background:#38204a"></div>Personal</div>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn">Filter</button>
+      <button class="action-btn primary">+ New Event</button>
+    </div>
+  </div>
+
+  <!-- ==================== WEEK VIEW ==================== -->
+  <div class="view-label">Week View</div>
+  <div class="eso-panel">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="panel-header">
+      <div class="panel-title">Tamriel Calendar</div>
+      <button class="close-btn">✕</button>
+    </div>
+
+    <div class="nav-bar">
+      <div class="nav-arrows">
+        <button class="nav-btn">◄</button>
+        <button class="nav-btn">Today</button>
+        <button class="nav-btn">►</button>
+      </div>
+      <div class="current-period">Dec 1 – Dec 7, 2025</div>
+      <div class="view-toggles">
+        <button class="view-btn">Day</button>
+        <button class="view-btn active">Week</button>
+        <button class="view-btn">Month</button>
+      </div>
+    </div>
+
+    <div class="calendar-content">
+      <div class="week-grid">
+        <div class="week-header-cell"></div>
+        <div class="week-header-cell">Sun<span>1</span></div>
+        <div class="week-header-cell">Mon<span>2</span></div>
+        <div class="week-header-cell">Tue<span>3</span></div>
+        <div class="week-header-cell today-col">Wed<span>4</span></div>
+        <div class="week-header-cell">Thu<span>5</span></div>
+        <div class="week-header-cell">Fri<span>6</span></div>
+        <div class="week-header-cell">Sat<span>7</span></div>
+
+        <div class="time-label">6 PM</div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell today-col"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+
+        <div class="time-label">7 PM</div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell today-col">
+          <div class="week-event event-meeting" style="top:2px">Guild Mtg</div>
+        </div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell">
+          <div class="week-event event-training" style="top:2px">Tank 101</div>
+        </div>
+
+        <div class="time-label">8 PM</div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell today-col">
+          <div class="week-event event-raid" style="top:2px;height:60px">vRG Prog</div>
+        </div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell">
+          <div class="week-event event-raid" style="top:2px;height:60px">vRG Prog</div>
+        </div>
+        <div class="week-hour-cell"></div>
+
+        <div class="time-label">9 PM</div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell today-col"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+
+        <div class="time-label">10 PM</div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell today-col"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+
+        <div class="time-label">11 PM</div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell today-col"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+        <div class="week-hour-cell"></div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn">Filter</button>
+      <button class="action-btn primary">+ New Event</button>
+    </div>
+  </div>
+
+  <!-- ==================== DAY VIEW ==================== -->
+  <div class="view-label">Day View</div>
+  <div class="eso-panel">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="panel-header">
+      <div class="panel-title">Tamriel Calendar</div>
+      <button class="close-btn">✕</button>
+    </div>
+
+    <div class="nav-bar">
+      <div class="nav-arrows">
+        <button class="nav-btn">◄</button>
+        <button class="nav-btn">Today</button>
+        <button class="nav-btn">►</button>
+      </div>
+      <div class="current-period">Thursday, December 4, 2025</div>
+      <div class="view-toggles">
+        <button class="view-btn active">Day</button>
+        <button class="view-btn">Week</button>
+        <button class="view-btn">Month</button>
+      </div>
+    </div>
+
+    <div class="calendar-content">
+      <div class="day-view-container">
+        <div class="day-schedule">
+          <div class="day-header">Today's Schedule</div>
+          
+          <div class="hour-row">
+            <div class="hour-label">5 PM</div>
+            <div class="hour-content"></div>
+          </div>
+          <div class="hour-row">
+            <div class="hour-label">6 PM</div>
+            <div class="hour-content"></div>
+          </div>
+          <div class="hour-row">
+            <div class="hour-label">7 PM</div>
+            <div class="hour-content">
+              <div class="day-event-block event-meeting">
+                <div class="day-event-title">Guild Meeting</div>
+                <div class="day-event-time">7:00 PM - 8:00 PM</div>
+              </div>
+            </div>
+          </div>
+          <div class="hour-row">
+            <div class="hour-label">8 PM</div>
+            <div class="hour-content">
+              <div class="day-event-block event-raid">
+                <div class="day-event-title">vRockgrove Progression</div>
+                <div class="day-event-time">8:00 PM - 11:00 PM</div>
+              </div>
+            </div>
+          </div>
+          <div class="hour-row">
+            <div class="hour-label">9 PM</div>
+            <div class="hour-content"></div>
+          </div>
+          <div class="hour-row">
+            <div class="hour-label">10 PM</div>
+            <div class="hour-content"></div>
+          </div>
+          <div class="hour-row">
+            <div class="hour-label">11 PM</div>
+            <div class="hour-content"></div>
+          </div>
+        </div>
+
+        <div class="day-sidebar">
+          <div class="sidebar-title">Event Details</div>
+          
+          <div class="event-detail-card">
+            <div class="event-detail-title">Guild Meeting</div>
+            <div class="event-detail-meta">7:00 PM - 8:00 PM</div>
+            <div class="event-detail-guild">
+              <span class="guild-dot" style="background:#e74c3c"></span>
+              Tamriel Raiders
+            </div>
+          </div>
+
+          <div class="event-detail-card">
+            <div class="event-detail-title">vRockgrove Prog</div>
+            <div class="event-detail-meta">8:00 PM - 11:00 PM</div>
+            <div class="event-detail-guild">
+              <span class="guild-dot" style="background:#e74c3c"></span>
+              Tamriel Raiders
+            </div>
+          </div>
+
+          <div class="sidebar-title" style="margin-top:16px">Quick Actions</div>
+          <button class="action-btn" style="width:100%; margin-bottom:6px">Edit Event</button>
+          <button class="action-btn" style="width:100%">Copy to Personal</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn">Filter</button>
+      <button class="action-btn primary">+ New Event</button>
+    </div>
+  </div>
+
+</body>
+</html>

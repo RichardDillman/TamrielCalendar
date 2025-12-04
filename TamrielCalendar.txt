@@ -1,0 +1,28 @@
+## Title: Tamriel Calendar
+## Description: In-game calendar with Day/Week/Month views, personal events, and guild event sync
+## Author: @RichardDillman
+## Version: 0.1.0
+## APIVersion: 101048
+## SavedVariables: TamrielCalendar_SV
+## OptionalDependsOn: LibDebugLogger LibAddonMenu-2.0 LibAddonMessage-2.0 LibSerialize LibDeflate
+
+; Core modules (load first - no dependencies on UI)
+modules/DateHelpers.lua
+modules/EventManager.lua
+modules/SyncManager.lua
+
+; Main entry point (initializes SavedVariables, registers events)
+TamrielCalendar.lua
+
+; UI definition
+TamrielCalendar.xml
+
+; UI modules
+modules/UI_MonthView.lua
+modules/UI_WeekView.lua
+modules/UI_DayView.lua
+modules/UI_GuildPanel.lua
+modules/UI_Dialogs.lua
+
+; Settings
+modules/SettingsPanel.lua
