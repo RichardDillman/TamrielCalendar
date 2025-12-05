@@ -57,23 +57,32 @@ SM.LibDeflate = nil
 function SM:Initialize()
     if self.initialized then return end
 
+    -- Track missing libraries for user notification
+    local missingLibs = {}
+
     -- Check for required libraries
     self.LAM2 = LibAddonMessage2
     self.LibSerialize = LibSerialize
     self.LibDeflate = LibDeflate
 
     if not self.LAM2 then
-        TC:Debug("SyncManager: LibAddonMessage2 not available - guild sync disabled")
-        return
+        table.insert(missingLibs, "LibAddonMessage-2.0")
     end
 
     if not self.LibSerialize then
-        TC:Debug("SyncManager: LibSerialize not available - guild sync disabled")
-        return
+        table.insert(missingLibs, "LibSerialize")
     end
 
     if not self.LibDeflate then
-        TC:Debug("SyncManager: LibDeflate not available - guild sync disabled")
+        table.insert(missingLibs, "LibDeflate")
+    end
+
+    -- If any libraries are missing, notify user and disable sync
+    if #missingLibs > 0 then
+        SM.syncDisabled = true
+        SM.missingLibraries = missingLibs
+        TC:Debug("SyncManager: Missing libraries - " .. table.concat(missingLibs, ", "))
+        -- Don't spam the user on every login, just log it
         return
     end
 
@@ -83,7 +92,18 @@ function SM:Initialize()
     end)
 
     self.initialized = true
+    SM.syncDisabled = false
     TC:Debug("SyncManager: Initialized with LibAddonMessage2")
+end
+
+--- Check if guild sync is available
+--- @return boolean available, string|nil reason
+function SM:IsAvailable()
+    if self.syncDisabled then
+        local reason = "Guild sync requires: " .. table.concat(self.missingLibraries or {}, ", ")
+        return false, reason
+    end
+    return self.initialized, nil
 end
 
 -------------------------------------------------

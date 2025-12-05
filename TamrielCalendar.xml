@@ -157,7 +157,7 @@
         <!-- ================================================== -->
 
         <TopLevelControl name="TamCalWindow" hidden="true" clampedToScreen="true" movable="true" mouseEnabled="true">
-            <Dimensions x="720" y="520"/>
+            <Dimensions x="720" y="620"/>
             <Anchor point="CENTER"/>
 
             <OnMoveStop>
@@ -170,42 +170,68 @@
                     <AnchorFill/>
                 </Backdrop>
 
-                <!-- Header -->
+                <!-- ============================================ -->
+                <!-- TOP HEADER SECTION (Title + Close Button)    -->
+                <!-- ============================================ -->
                 <Control name="$(parent)Header">
                     <Dimensions y="48"/>
                     <Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
                     <Anchor point="TOPRIGHT" offsetX="0" offsetY="0"/>
 
                     <Controls>
-                        <Label name="$(parent)Title" font="ZoFontWinH2" color="D4AF37" horizontalAlignment="LEFT" verticalAlignment="CENTER" text="Tamriel Calendar">
-                            <Anchor point="LEFT" offsetX="16" offsetY="0"/>
+                        <!-- Main Title - Centered -->
+                        <Label name="$(parent)Title" font="ZoFontWinH1" color="D4AF37" horizontalAlignment="CENTER" verticalAlignment="CENTER" text="Tamriel Calendar">
+                            <Anchor point="CENTER" offsetY="4"/>
                         </Label>
 
+                        <!-- Close Button -->
                         <Button name="$(parent)Close" inherits="ZO_CloseButton">
-                            <Anchor point="TOPRIGHT" offsetX="-12" offsetY="12"/>
+                            <Anchor point="TOPRIGHT" offsetX="-8" offsetY="8"/>
                             <OnClicked>
                                 TamrielCalendar:HideCalendar()
                             </OnClicked>
                         </Button>
+
+                        <!-- Settings Button -->
+                        <Button name="$(parent)SettingsBtn">
+                            <Dimensions x="28" y="28"/>
+                            <Anchor point="RIGHT" to="$(parent)Close" relativeTo="LEFT" offsetX="-4"/>
+                            <OnClicked>
+                                TamrielCalendar:OnSettingsClicked()
+                            </OnClicked>
+                            <Controls>
+                                <Texture name="$(parent)Icon" textureFile="EsoUI/Art/MainMenu/menuBar_settings_up.dds">
+                                    <AnchorFill/>
+                                </Texture>
+                            </Controls>
+                        </Button>
                     </Controls>
                 </Control>
 
-                <!-- Navigation Bar -->
+                <!-- ============================================ -->
+                <!-- NAVIGATION BAR (Month/Year + Nav + Views)    -->
+                <!-- ============================================ -->
                 <Control name="$(parent)NavBar">
-                    <Dimensions y="38"/>
-                    <Anchor point="TOPLEFT" to="$(parent)Header" relativeTo="BOTTOMLEFT"/>
-                    <Anchor point="TOPRIGHT" to="$(parent)Header" relativeTo="BOTTOMRIGHT"/>
+                    <Dimensions y="48"/>
+                    <Anchor point="TOPLEFT" to="$(parent)Header" relativeTo="BOTTOMLEFT" offsetX="8"/>
+                    <Anchor point="TOPRIGHT" to="$(parent)Header" relativeTo="BOTTOMRIGHT" offsetX="-8"/>
 
                     <Controls>
-                        <!-- Prev Button -->
+                        <!-- Nav Background/Separator -->
+                        <Backdrop name="$(parent)BG" inherits="ZO_ThinBackdrop" tier="LOW">
+                            <AnchorFill/>
+                            <Edge edgeSize="1"/>
+                        </Backdrop>
+
+                        <!-- Prev Month Button -->
                         <Button name="$(parent)PrevBtn" inherits="ZO_DefaultButton">
-                            <Dimensions x="32" y="28"/>
-                            <Anchor point="LEFT" offsetX="16"/>
+                            <Dimensions x="36" y="32"/>
+                            <Anchor point="LEFT" offsetX="8" offsetY="0"/>
                             <OnClicked>
                                 TamrielCalendar:OnPrevClicked()
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" font="ZoFontWinH4" text="◄" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                <Label name="$(parent)Label" font="ZoFontWinH3" text="◄" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>
@@ -213,77 +239,77 @@
 
                         <!-- Today Button -->
                         <Button name="$(parent)TodayBtn" inherits="ZO_DefaultButton">
-                            <Dimensions x="60" y="28"/>
-                            <Anchor point="LEFT" to="$(parent)PrevBtn" relativeTo="RIGHT" offsetX="8"/>
+                            <Dimensions x="70" y="32"/>
+                            <Anchor point="LEFT" to="$(parent)PrevBtn" relativeTo="RIGHT" offsetX="6"/>
                             <OnClicked>
                                 TamrielCalendar:GoToToday()
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" font="ZoFontGameSmall" horizontalAlignment="CENTER" verticalAlignment="CENTER" text="Today">
+                                <Label name="$(parent)Label" font="ZoFontGame" horizontalAlignment="CENTER" verticalAlignment="CENTER" text="Today">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>
                         </Button>
 
-                        <!-- Next Button -->
+                        <!-- Next Month Button -->
                         <Button name="$(parent)NextBtn" inherits="ZO_DefaultButton">
-                            <Dimensions x="32" y="28"/>
-                            <Anchor point="LEFT" to="$(parent)TodayBtn" relativeTo="RIGHT" offsetX="8"/>
+                            <Dimensions x="36" y="32"/>
+                            <Anchor point="LEFT" to="$(parent)TodayBtn" relativeTo="RIGHT" offsetX="6"/>
                             <OnClicked>
                                 TamrielCalendar:OnNextClicked()
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" font="ZoFontWinH4" text="►" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                <Label name="$(parent)Label" font="ZoFontWinH3" text="►" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>
                         </Button>
 
-                        <!-- Period Label (e.g., "December 2025") -->
-                        <Label name="$(parent)PeriodLabel" font="ZoFontWinH3" color="E8DCC8" horizontalAlignment="CENTER" verticalAlignment="CENTER" text="December 2025">
-                            <Anchor point="CENTER"/>
+                        <!-- Period Label (e.g., "December 2025") - Large and prominent -->
+                        <Label name="$(parent)PeriodLabel" font="ZoFontWinH2" color="E8DCC8" horizontalAlignment="CENTER" verticalAlignment="CENTER" text="December 2025">
+                            <Anchor point="CENTER" offsetX="0" offsetY="0"/>
                         </Label>
 
-                        <!-- View Toggle Buttons -->
+                        <!-- View Toggle Buttons (Day / Week / Month) -->
                         <Control name="$(parent)ViewToggles">
-                            <Dimensions x="150" y="28"/>
-                            <Anchor point="RIGHT" offsetX="-16"/>
+                            <Dimensions x="180" y="32"/>
+                            <Anchor point="RIGHT" offsetX="-8"/>
 
                             <Controls>
                                 <Button name="$(parent)DayBtn" inherits="ZO_DefaultButton">
-                                    <Dimensions x="44" y="28"/>
+                                    <Dimensions x="54" y="32"/>
                                     <Anchor point="LEFT"/>
                                     <OnClicked>
                                         TamrielCalendar:SetView(TamrielCalendar.VIEW_MODES.DAY)
                                     </OnClicked>
                                     <Controls>
-                                        <Label name="$(parent)Label" font="ZoFontGameSmall" text="D" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                        <Label name="$(parent)Label" font="ZoFontGame" text="Day" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                             <AnchorFill/>
                                         </Label>
                                     </Controls>
                                 </Button>
 
                                 <Button name="$(parent)WeekBtn" inherits="ZO_DefaultButton">
-                                    <Dimensions x="44" y="28"/>
+                                    <Dimensions x="58" y="32"/>
                                     <Anchor point="LEFT" to="$(parent)DayBtn" relativeTo="RIGHT" offsetX="4"/>
                                     <OnClicked>
                                         TamrielCalendar:SetView(TamrielCalendar.VIEW_MODES.WEEK)
                                     </OnClicked>
                                     <Controls>
-                                        <Label name="$(parent)Label" font="ZoFontGameSmall" text="W" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                        <Label name="$(parent)Label" font="ZoFontGame" text="Week" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                             <AnchorFill/>
                                         </Label>
                                     </Controls>
                                 </Button>
 
                                 <Button name="$(parent)MonthBtn" inherits="ZO_DefaultButton">
-                                    <Dimensions x="44" y="28"/>
+                                    <Dimensions x="60" y="32"/>
                                     <Anchor point="LEFT" to="$(parent)WeekBtn" relativeTo="RIGHT" offsetX="4"/>
                                     <OnClicked>
                                         TamrielCalendar:SetView(TamrielCalendar.VIEW_MODES.MONTH)
                                     </OnClicked>
                                     <Controls>
-                                        <Label name="$(parent)Label" font="ZoFontGameSmall" text="M" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                        <Label name="$(parent)Label" font="ZoFontGame" text="Month" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                             <AnchorFill/>
                                         </Label>
                                     </Controls>
@@ -293,9 +319,11 @@
                     </Controls>
                 </Control>
 
-                <!-- Content Area (holds all views) -->
+                <!-- ============================================ -->
+                <!-- CONTENT AREA (Calendar Views)                -->
+                <!-- ============================================ -->
                 <Control name="$(parent)Content">
-                    <Anchor point="TOPLEFT" to="$(parent)NavBar" relativeTo="BOTTOMLEFT" offsetX="8" offsetY="8"/>
+                    <Anchor point="TOPLEFT" to="$(parent)NavBar" relativeTo="BOTTOMLEFT" offsetX="0" offsetY="8"/>
                     <Anchor point="BOTTOMRIGHT" offsetX="-8" offsetY="-110"/>
 
                     <Controls>
@@ -449,7 +477,7 @@
         <!-- ================================================== -->
 
         <TopLevelControl name="TamCalEventForm" hidden="true" clampedToScreen="true" movable="true" mouseEnabled="true" level="2">
-            <Dimensions x="400" y="480"/>
+            <Dimensions x="440" y="580"/>
             <Anchor point="CENTER"/>
 
             <Controls>
@@ -457,19 +485,21 @@
                     <AnchorFill/>
                 </Backdrop>
 
-                <!-- Header -->
+                <!-- ============================================ -->
+                <!-- HEADER (Title at top with clear space)       -->
+                <!-- ============================================ -->
                 <Control name="$(parent)Header">
-                    <Dimensions y="44"/>
+                    <Dimensions y="52"/>
                     <Anchor point="TOPLEFT"/>
                     <Anchor point="TOPRIGHT"/>
 
                     <Controls>
-                        <Label name="$(parent)Title" font="ZoFontWinH3" color="D4AF37" text="Create Event">
-                            <Anchor point="LEFT" offsetX="16" offsetY="4"/>
+                        <Label name="$(parent)Title" font="ZoFontWinH1" color="D4AF37" text="Create Event" horizontalAlignment="CENTER">
+                            <Anchor point="CENTER" offsetY="4"/>
                         </Label>
 
                         <Button name="$(parent)Close" inherits="ZO_CloseButton">
-                            <Anchor point="TOPRIGHT" offsetX="-12" offsetY="10"/>
+                            <Anchor point="TOPRIGHT" offsetX="-8" offsetY="8"/>
                             <OnClicked>
                                 TamrielCalendar:HideEventForm()
                             </OnClicked>
@@ -477,108 +507,188 @@
                     </Controls>
                 </Control>
 
-                <!-- Form Content -->
+                <!-- ============================================ -->
+                <!-- FORM CONTENT                                 -->
+                <!-- ============================================ -->
                 <Control name="$(parent)Content">
-                    <Anchor point="TOPLEFT" to="$(parent)Header" relativeTo="BOTTOMLEFT" offsetX="16" offsetY="4"/>
-                    <Anchor point="BOTTOMRIGHT" offsetX="-16" offsetY="-50"/>
+                    <Anchor point="TOPLEFT" to="$(parent)Header" relativeTo="BOTTOMLEFT" offsetX="20" offsetY="8"/>
+                    <Anchor point="BOTTOMRIGHT" offsetX="-20" offsetY="-60"/>
 
                     <Controls>
-                        <!-- Title Input -->
-                        <Label name="$(parent)TitleLabel" font="ZoFontGameSmall" text="Title:" color="C5A552">
-                            <Anchor point="TOPLEFT"/>
+                        <!-- ========== EVENT TITLE ========== -->
+                        <Label name="$(parent)TitleLabel" font="ZoFontGame" text="Event Title" color="C5A552">
+                            <Dimensions y="18"/>
+                            <Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
                         </Label>
                         <Backdrop name="$(parent)TitleBG" inherits="ZO_EditBackdrop">
-                            <Dimensions y="28"/>
+                            <Dimensions y="32"/>
                             <Anchor point="TOPLEFT" to="$(parent)TitleLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
                             <Anchor point="RIGHT"/>
                         </Backdrop>
                         <EditBox name="$(parent)TitleInput" inherits="ZO_DefaultEditForBackdrop">
-                            <Anchor point="TOPLEFT" to="$(parent)TitleBG" offsetX="4" offsetY="2"/>
-                            <Anchor point="BOTTOMRIGHT" to="$(parent)TitleBG" offsetX="-4" offsetY="-2"/>
+                            <Anchor point="TOPLEFT" to="$(parent)TitleBG" offsetX="8" offsetY="4"/>
+                            <Anchor point="BOTTOMRIGHT" to="$(parent)TitleBG" offsetX="-8" offsetY="-4"/>
                         </EditBox>
 
-                        <!-- Description Input -->
-                        <Label name="$(parent)DescLabel" font="ZoFontGameSmall" text="Description:" color="C5A552">
+                        <!-- ========== DESCRIPTION ========== -->
+                        <Label name="$(parent)DescLabel" font="ZoFontGame" text="Description (optional)" color="C5A552">
+                            <Dimensions y="18"/>
                             <Anchor point="TOPLEFT" to="$(parent)TitleBG" relativeTo="BOTTOMLEFT" offsetY="12"/>
                         </Label>
                         <Backdrop name="$(parent)DescBG" inherits="ZO_EditBackdrop">
-                            <Dimensions y="60"/>
+                            <Dimensions y="56"/>
                             <Anchor point="TOPLEFT" to="$(parent)DescLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
                             <Anchor point="RIGHT"/>
                         </Backdrop>
                         <EditBox name="$(parent)DescInput" inherits="ZO_DefaultEditForBackdrop" multiLine="true">
-                            <Anchor point="TOPLEFT" to="$(parent)DescBG" offsetX="4" offsetY="2"/>
-                            <Anchor point="BOTTOMRIGHT" to="$(parent)DescBG" offsetX="-4" offsetY="-2"/>
+                            <Anchor point="TOPLEFT" to="$(parent)DescBG" offsetX="8" offsetY="4"/>
+                            <Anchor point="BOTTOMRIGHT" to="$(parent)DescBG" offsetX="-8" offsetY="-4"/>
                         </EditBox>
 
-                        <!-- Category Dropdown -->
-                        <Label name="$(parent)CategoryLabel" font="ZoFontGameSmall" text="Category:" color="C5A552">
+                        <!-- ========== CATEGORY ========== -->
+                        <Label name="$(parent)CategoryLabel" font="ZoFontGame" text="Category" color="C5A552">
+                            <Dimensions y="18"/>
                             <Anchor point="TOPLEFT" to="$(parent)DescBG" relativeTo="BOTTOMLEFT" offsetY="12"/>
                         </Label>
                         <Control name="$(parent)CategoryDropdown">
-                            <Dimensions x="200" y="28"/>
+                            <Dimensions x="160" y="30"/>
                             <Anchor point="TOPLEFT" to="$(parent)CategoryLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
-                            <!-- Dropdown created by ZO_ComboBox -->
                         </Control>
 
-                        <!-- Date/Time Section -->
-                        <Label name="$(parent)DateLabel" font="ZoFontGameSmall" text="Start:" color="C5A552">
-                            <Anchor point="TOPLEFT" to="$(parent)CategoryDropdown" relativeTo="BOTTOMLEFT" offsetY="16"/>
+                        <!-- ========== TRIAL DROPDOWN (Raid only) ========== -->
+                        <Label name="$(parent)TrialLabel" font="ZoFontGame" text="Trial" color="C5A552" hidden="true">
+                            <Dimensions y="18"/>
+                            <Anchor point="LEFT" to="$(parent)CategoryLabel" relativeTo="RIGHT" offsetX="80"/>
+                        </Label>
+                        <Control name="$(parent)TrialDropdown" hidden="true">
+                            <Dimensions x="140" y="30"/>
+                            <Anchor point="TOPLEFT" to="$(parent)TrialLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
+                        </Control>
+
+                        <!-- ========== MODIFIER DROPDOWN (Raid only) ========== -->
+                        <Label name="$(parent)ModifierLabel" font="ZoFontGame" text="Difficulty" color="C5A552" hidden="true">
+                            <Dimensions y="18"/>
+                            <Anchor point="LEFT" to="$(parent)TrialLabel" relativeTo="RIGHT" offsetX="60"/>
+                        </Label>
+                        <Control name="$(parent)ModifierDropdown" hidden="true">
+                            <Dimensions x="100" y="30"/>
+                            <Anchor point="TOPLEFT" to="$(parent)ModifierLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
+                        </Control>
+
+                        <!-- ========== START DATE/TIME ========== -->
+                        <Label name="$(parent)StartLabel" font="ZoFontGame" text="Start Date &amp; Time" color="C5A552">
+                            <Dimensions y="18"/>
+                            <Anchor point="TOPLEFT" to="$(parent)CategoryDropdown" relativeTo="BOTTOMLEFT" offsetY="14"/>
                         </Label>
 
-                        <Label name="$(parent)StartDateDisplay" font="ZoFontGameSmall" color="E8DCC8">
-                            <Dimensions x="200" y="24"/>
-                            <Anchor point="LEFT" to="$(parent)DateLabel" relativeTo="RIGHT" offsetX="8"/>
+                        <Backdrop name="$(parent)StartDateBG" inherits="ZO_EditBackdrop">
+                            <Dimensions x="110" y="28"/>
+                            <Anchor point="TOPLEFT" to="$(parent)StartLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
+                        </Backdrop>
+                        <Label name="$(parent)StartDateDisplay" font="ZoFontGame" color="E8DCC8" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                            <Anchor point="TOPLEFT" to="$(parent)StartDateBG" offsetX="4" offsetY="2"/>
+                            <Anchor point="BOTTOMRIGHT" to="$(parent)StartDateBG" offsetX="-4" offsetY="-2"/>
                         </Label>
 
-                        <Label name="$(parent)EndLabel" font="ZoFontGameSmall" text="End:" color="C5A552">
-                            <Anchor point="TOPLEFT" to="$(parent)DateLabel" relativeTo="BOTTOMLEFT" offsetY="28"/>
+                        <Button name="$(parent)StartHourDown" inherits="ZO_DefaultButton">
+                            <Dimensions x="28" y="28"/>
+                            <Anchor point="LEFT" to="$(parent)StartDateBG" relativeTo="RIGHT" offsetX="12"/>
+                            <OnClicked>TamrielCalendar:OnStartHourDown()</OnClicked>
+                            <Controls><Label font="ZoFontWinH4" text="◄" horizontalAlignment="CENTER" verticalAlignment="CENTER"><AnchorFill/></Label></Controls>
+                        </Button>
+                        <Backdrop name="$(parent)StartTimeBG" inherits="ZO_EditBackdrop">
+                            <Dimensions x="80" y="28"/>
+                            <Anchor point="LEFT" to="$(parent)StartHourDown" relativeTo="RIGHT" offsetX="4"/>
+                        </Backdrop>
+                        <Label name="$(parent)StartTimeDisplay" font="ZoFontGame" color="E8DCC8" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                            <Anchor point="TOPLEFT" to="$(parent)StartTimeBG" offsetX="4" offsetY="2"/>
+                            <Anchor point="BOTTOMRIGHT" to="$(parent)StartTimeBG" offsetX="-4" offsetY="-2"/>
+                        </Label>
+                        <Button name="$(parent)StartHourUp" inherits="ZO_DefaultButton">
+                            <Dimensions x="28" y="28"/>
+                            <Anchor point="LEFT" to="$(parent)StartTimeBG" relativeTo="RIGHT" offsetX="4"/>
+                            <OnClicked>TamrielCalendar:OnStartHourUp()</OnClicked>
+                            <Controls><Label font="ZoFontWinH4" text="►" horizontalAlignment="CENTER" verticalAlignment="CENTER"><AnchorFill/></Label></Controls>
+                        </Button>
+
+                        <!-- ========== END DATE/TIME ========== -->
+                        <Label name="$(parent)EndLabel" font="ZoFontGame" text="End Date &amp; Time" color="C5A552">
+                            <Dimensions y="18"/>
+                            <Anchor point="TOPLEFT" to="$(parent)StartDateBG" relativeTo="BOTTOMLEFT" offsetY="14"/>
                         </Label>
 
-                        <Label name="$(parent)EndDateDisplay" font="ZoFontGameSmall" color="E8DCC8">
-                            <Dimensions x="200" y="24"/>
-                            <Anchor point="LEFT" to="$(parent)EndLabel" relativeTo="RIGHT" offsetX="8"/>
+                        <Backdrop name="$(parent)EndDateBG" inherits="ZO_EditBackdrop">
+                            <Dimensions x="110" y="28"/>
+                            <Anchor point="TOPLEFT" to="$(parent)EndLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
+                        </Backdrop>
+                        <Label name="$(parent)EndDateDisplay" font="ZoFontGame" color="E8DCC8" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                            <Anchor point="TOPLEFT" to="$(parent)EndDateBG" offsetX="4" offsetY="2"/>
+                            <Anchor point="BOTTOMRIGHT" to="$(parent)EndDateBG" offsetX="-4" offsetY="-2"/>
                         </Label>
 
-                        <!-- Guild Selector (only shown if in a guild) -->
-                        <Label name="$(parent)GuildLabel" font="ZoFontGameSmall" text="Guild (optional):" color="C5A552" hidden="true">
-                            <Anchor point="TOPLEFT" to="$(parent)EndLabel" relativeTo="BOTTOMLEFT" offsetY="16"/>
+                        <Button name="$(parent)EndHourDown" inherits="ZO_DefaultButton">
+                            <Dimensions x="28" y="28"/>
+                            <Anchor point="LEFT" to="$(parent)EndDateBG" relativeTo="RIGHT" offsetX="12"/>
+                            <OnClicked>TamrielCalendar:OnEndHourDown()</OnClicked>
+                            <Controls><Label font="ZoFontWinH4" text="◄" horizontalAlignment="CENTER" verticalAlignment="CENTER"><AnchorFill/></Label></Controls>
+                        </Button>
+                        <Backdrop name="$(parent)EndTimeBG" inherits="ZO_EditBackdrop">
+                            <Dimensions x="80" y="28"/>
+                            <Anchor point="LEFT" to="$(parent)EndHourDown" relativeTo="RIGHT" offsetX="4"/>
+                        </Backdrop>
+                        <Label name="$(parent)EndTimeDisplay" font="ZoFontGame" color="E8DCC8" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                            <Anchor point="TOPLEFT" to="$(parent)EndTimeBG" offsetX="4" offsetY="2"/>
+                            <Anchor point="BOTTOMRIGHT" to="$(parent)EndTimeBG" offsetX="-4" offsetY="-2"/>
+                        </Label>
+                        <Button name="$(parent)EndHourUp" inherits="ZO_DefaultButton">
+                            <Dimensions x="28" y="28"/>
+                            <Anchor point="LEFT" to="$(parent)EndTimeBG" relativeTo="RIGHT" offsetX="4"/>
+                            <OnClicked>TamrielCalendar:OnEndHourUp()</OnClicked>
+                            <Controls><Label font="ZoFontWinH4" text="►" horizontalAlignment="CENTER" verticalAlignment="CENTER"><AnchorFill/></Label></Controls>
+                        </Button>
+
+                        <!-- ========== GUILD SELECTOR ========== -->
+                        <Label name="$(parent)GuildLabel" font="ZoFontGame" text="Guild (optional)" color="C5A552" hidden="true">
+                            <Dimensions y="18"/>
+                            <Anchor point="TOPLEFT" to="$(parent)EndDateBG" relativeTo="BOTTOMLEFT" offsetY="14"/>
                         </Label>
                         <Control name="$(parent)GuildDropdown" hidden="true">
-                            <Dimensions x="200" y="28"/>
+                            <Dimensions x="200" y="30"/>
                             <Anchor point="TOPLEFT" to="$(parent)GuildLabel" relativeTo="BOTTOMLEFT" offsetY="4"/>
                         </Control>
                     </Controls>
                 </Control>
 
-                <!-- Action Buttons -->
+                <!-- ============================================ -->
+                <!-- ACTION BUTTONS                               -->
+                <!-- ============================================ -->
                 <Control name="$(parent)Actions">
-                    <Dimensions y="40"/>
+                    <Dimensions y="52"/>
                     <Anchor point="BOTTOMLEFT"/>
                     <Anchor point="BOTTOMRIGHT"/>
 
                     <Controls>
                         <Button name="$(parent)CancelBtn" inherits="ZO_DefaultButton">
-                            <Dimensions x="80" y="28"/>
-                            <Anchor point="LEFT" offsetX="16"/>
+                            <Dimensions x="110" y="36"/>
+                            <Anchor point="LEFT" offsetX="20"/>
                             <OnClicked>
                                 TamrielCalendar:HideEventForm()
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" font="ZoFontGameSmall" text="Cancel" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                <Label name="$(parent)Label" font="ZoFontGame" text="Cancel" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>
                         </Button>
 
                         <Button name="$(parent)SaveBtn" inherits="ZO_DefaultButton">
-                            <Dimensions x="80" y="28"/>
-                            <Anchor point="RIGHT" offsetX="-16"/>
+                            <Dimensions x="110" y="36"/>
+                            <Anchor point="RIGHT" offsetX="-20"/>
                             <OnClicked>
                                 TamrielCalendar:OnEventFormSave()
                             </OnClicked>
                             <Controls>
-                                <Label name="$(parent)Label" font="ZoFontGameSmall" text="Save" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                <Label name="$(parent)Label" font="ZoFontGame" text="Save Event" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>

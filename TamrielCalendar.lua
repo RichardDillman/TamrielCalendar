@@ -493,38 +493,225 @@ function TC:ShowEventForm(event)
             contentDesc:SetText(event and event.description or "")
         end
 
-        -- Set default times
-        local startDisplay = TamCalEventFormContentStartDateDisplay
-        local endDisplay = TamCalEventFormContentEndDateDisplay
         local use24Hour = self:GetPreference("use24HourTime")
 
         if event then
-            if startDisplay then
-                startDisplay:SetText(DH.FormatDateTime(event.startTime, use24Hour))
-            end
-            if endDisplay then
-                endDisplay:SetText(DH.FormatDateTime(event.endTime, use24Hour))
-            end
             self.eventFormStartTime = event.startTime
             self.eventFormEndTime = event.endTime
         else
             -- Default to selected date at 7pm-9pm
             local baseDate = self.selectedDate or DH.GetTodayMidnight()
-            local startTime = DH.SetTime(baseDate, 19, 0)
-            local endTime = DH.SetTime(baseDate, 21, 0)
-
-            if startDisplay then
-                startDisplay:SetText(DH.FormatDateTime(startTime, use24Hour))
-            end
-            if endDisplay then
-                endDisplay:SetText(DH.FormatDateTime(endTime, use24Hour))
-            end
-            self.eventFormStartTime = startTime
-            self.eventFormEndTime = endTime
+            self.eventFormStartTime = DH.SetTime(baseDate, 19, 0)
+            self.eventFormEndTime = DH.SetTime(baseDate, 21, 0)
         end
+
+        -- Update the time displays
+        self:UpdateEventFormTimeDisplays()
 
         TamCalEventForm:SetHidden(false)
     end
+end
+
+--- Update the time displays in the event form
+function TC:UpdateEventFormTimeDisplays()
+    local use24Hour = self:GetPreference("use24HourTime")
+
+    -- Start date display (just the date)
+    local startDateDisplay = TamCalEventFormContentStartDateDisplay
+    if startDateDisplay then
+        startDateDisplay:SetText(DH.FormatDate(self.eventFormStartTime))
+    end
+
+    -- Start time display (just the time)
+    local startTimeDisplay = TamCalEventFormContentStartTimeDisplay
+    if startTimeDisplay then
+        startTimeDisplay:SetText(DH.FormatTime(self.eventFormStartTime, use24Hour))
+    end
+
+    -- End date display
+    local endDateDisplay = TamCalEventFormContentEndDateDisplay
+    if endDateDisplay then
+        endDateDisplay:SetText(DH.FormatDate(self.eventFormEndTime))
+    end
+
+    -- End time display
+    local endTimeDisplay = TamCalEventFormContentEndTimeDisplay
+    if endTimeDisplay then
+        endTimeDisplay:SetText(DH.FormatTime(self.eventFormEndTime, use24Hour))
+    end
+end
+
+--- Adjust start time by hours
+--- @param delta number Hours to add (negative to subtract)
+function TC:AdjustStartTime(delta)
+    local newTime = self.eventFormStartTime + (delta * DH.SECONDS_PER_HOUR)
+    self.eventFormStartTime = newTime
+
+    -- If start time moved past end time, adjust end time
+    if self.eventFormStartTime >= self.eventFormEndTime then
+        self.eventFormEndTime = self.eventFormStartTime + DH.SECONDS_PER_HOUR
+    end
+
+    self:UpdateEventFormTimeDisplays()
+end
+
+--- Adjust end time by hours
+--- @param delta number Hours to add (negative to subtract)
+function TC:AdjustEndTime(delta)
+    local newTime = self.eventFormEndTime + (delta * DH.SECONDS_PER_HOUR)
+
+    -- Don't allow end time before start time
+    if newTime > self.eventFormStartTime then
+        self.eventFormEndTime = newTime
+        self:UpdateEventFormTimeDisplays()
+    end
+end
+
+--- Handle start hour decrease
+function TC:OnStartHourDown()
+    self:AdjustStartTime(-1)
+    PlaySound(SOUNDS.POSITIVE_CLICK)
+end
+
+--- Handle start hour increase
+function TC:OnStartHourUp()
+    self:AdjustStartTime(1)
+    PlaySound(SOUNDS.POSITIVE_CLICK)
+end
+
+--- Handle end hour decrease
+function TC:OnEndHourDown()
+    self:AdjustEndTime(-1)
+    PlaySound(SOUNDS.POSITIVE_CLICK)
+end
+
+--- Handle end hour increase
+function TC:OnEndHourUp()
+    self:AdjustEndTime(1)
+    PlaySound(SOUNDS.POSITIVE_CLICK)
+end
+
+--- Handle settings button click
+function TC:OnSettingsClicked()
+    -- Open LibAddonMenu settings if available
+    local LAM = LibAddonMenu2
+    if LAM then
+        LAM:OpenToPanel(TC.settingsPanel)
+    else
+        d("[TamCal] Settings panel requires LibAddonMenu-2.0")
+    end
+end
+
+-------------------------------------------------
+-- Event Form Dropdowns
+-------------------------------------------------
+
+-- Category options
+TC.CATEGORY_LIST = {"Personal", "Raid", "Party", "Training", "Meeting"}
+
+-- Trial options (for Raid category)
+TC.TRIAL_LIST = {
+    "Any Trial",
+    "Aetherian Archive",
+    "Cloudrest",
+    "Dreadsail Reef",
+    "Hel Ra Citadel",
+    "Kyne's Aegis",
+    "Lucent Citadel",
+    "Maw of Lorkhaj",
+    "Rockgrove",
+    "Sanctum Ophidia",
+    "Sunspire",
+    "Asylum Sanctorium",
+    "Halls of Fabrication",
+}
+
+-- Difficulty modifiers
+TC.MODIFIER_LIST = {"Normal", "Veteran", "Veteran HM"}
+
+--- Initialize the event form dropdowns
+function TC:InitializeEventFormDropdowns()
+    -- Category Dropdown
+    local categoryDropdown = TamCalEventFormContentCategoryDropdown
+    if categoryDropdown then
+        local comboBox = ZO_ComboBox_ObjectFromContainer(categoryDropdown)
+        if not comboBox then
+            comboBox = ZO_ComboBox:New(categoryDropdown)
+        end
+        comboBox:SetSortsItems(false)
+        comboBox:ClearItems()
+
+        for _, category in ipairs(TC.CATEGORY_LIST) do
+            local entry = comboBox:CreateItemEntry(category, function()
+                TC.eventFormCategory = category
+                TC:OnCategoryChanged(category)
+            end)
+            comboBox:AddItem(entry)
+        end
+
+        comboBox:SelectFirstItem()
+        TC.categoryComboBox = comboBox
+    end
+
+    -- Trial Dropdown
+    local trialDropdown = TamCalEventFormContentTrialDropdown
+    if trialDropdown then
+        local comboBox = ZO_ComboBox_ObjectFromContainer(trialDropdown)
+        if not comboBox then
+            comboBox = ZO_ComboBox:New(trialDropdown)
+        end
+        comboBox:SetSortsItems(false)
+        comboBox:ClearItems()
+
+        for _, trial in ipairs(TC.TRIAL_LIST) do
+            local entry = comboBox:CreateItemEntry(trial, function()
+                TC.eventFormTrial = trial
+            end)
+            comboBox:AddItem(entry)
+        end
+
+        comboBox:SelectFirstItem()
+        TC.trialComboBox = comboBox
+    end
+
+    -- Modifier Dropdown
+    local modifierDropdown = TamCalEventFormContentModifierDropdown
+    if modifierDropdown then
+        local comboBox = ZO_ComboBox_ObjectFromContainer(modifierDropdown)
+        if not comboBox then
+            comboBox = ZO_ComboBox:New(modifierDropdown)
+        end
+        comboBox:SetSortsItems(false)
+        comboBox:ClearItems()
+
+        for _, modifier in ipairs(TC.MODIFIER_LIST) do
+            local entry = comboBox:CreateItemEntry(modifier, function()
+                TC.eventFormModifier = modifier
+            end)
+            comboBox:AddItem(entry)
+        end
+
+        comboBox:SelectFirstItem()
+        TC.modifierComboBox = comboBox
+    end
+end
+
+--- Called when category changes to show/hide raid-specific fields
+--- @param category string The selected category
+function TC:OnCategoryChanged(category)
+    local isRaid = (category == "Raid")
+
+    -- Show/hide trial dropdown
+    local trialLabel = TamCalEventFormContentTrialLabel
+    local trialDropdown = TamCalEventFormContentTrialDropdown
+    if trialLabel then trialLabel:SetHidden(not isRaid) end
+    if trialDropdown then trialDropdown:SetHidden(not isRaid) end
+
+    -- Show/hide modifier dropdown
+    local modifierLabel = TamCalEventFormContentModifierLabel
+    local modifierDropdown = TamCalEventFormContentModifierDropdown
+    if modifierLabel then modifierLabel:SetHidden(not isRaid) end
+    if modifierDropdown then modifierDropdown:SetHidden(not isRaid) end
 end
 
 --- Hide the event form
@@ -548,13 +735,22 @@ function TC:OnEventFormSave()
         return
     end
 
+    -- Get selected category (default to Personal)
+    local category = self.eventFormCategory or "Personal"
+
     local eventData = {
         title = title,
         description = descInput and descInput:GetText() or "",
         startTime = self.eventFormStartTime,
         endTime = self.eventFormEndTime,
-        category = TC.CATEGORIES.PERSONAL,
+        category = category,
     }
+
+    -- Add trial and modifier for Raid events
+    if category == "Raid" then
+        eventData.trial = self.eventFormTrial
+        eventData.modifier = self.eventFormModifier
+    end
 
     local EM = TC.EventManager
     local success, err
@@ -691,5 +887,16 @@ local function OnAddonLoaded(event, addonName)
     d(string.format("[TamCal] Tamriel Calendar v%s loaded. Type /tamcal to open.", TC.version))
 end
 
+--- Initialize UI elements after player activates (UI is ready)
+local function OnPlayerActivated()
+    EVENT_MANAGER:UnregisterForEvent(TC.name .. "_Main", EVENT_PLAYER_ACTIVATED)
+
+    -- Initialize dropdowns after a short delay to ensure UI is ready
+    zo_callLater(function()
+        TC:InitializeEventFormDropdowns()
+    end, 250)
+end
+
 -- Register for addon loaded event
 EVENT_MANAGER:RegisterForEvent(TC.name, EVENT_ADD_ON_LOADED, OnAddonLoaded)
+EVENT_MANAGER:RegisterForEvent(TC.name .. "_Main", EVENT_PLAYER_ACTIVATED, OnPlayerActivated)
