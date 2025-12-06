@@ -86,8 +86,19 @@ DV.initialized = false
 -- Initialization
 -------------------------------------------------
 
+--- Helper to get or create a control
+local function GetOrCreateControl(name, parent, controlType)
+    local control = _G[name]
+    if not control then
+        control = CreateControl(name, parent, controlType)
+    end
+    return control
+end
+
 --- Initialize the day view UI
 function DV:Initialize()
+    if self.initialized then return end -- Prevent double init
+
     local dayView = TamCalWindowContentDayView
     if not dayView then
         TC:Debug("DayView: Cannot find TamCalWindowContentDayView")
@@ -120,12 +131,13 @@ function DV:CreateHourGrid()
         local yOffset = (rowIndex - 1) * HOUR_ROW_HEIGHT
 
         -- Create hour row container
-        local hourRow = CreateControl("TamCalDayHourRow" .. hour, schedule, CT_CONTROL)
+        local hourRowName = "TamCalDayHourRow" .. hour
+        local hourRow = GetOrCreateControl(hourRowName, schedule, CT_CONTROL)
         hourRow:SetDimensions(scheduleWidth, HOUR_ROW_HEIGHT)
         hourRow:SetAnchor(TOPLEFT, schedule, TOPLEFT, 0, yOffset)
 
         -- Background for the entire row
-        local rowBg = CreateControl("$(parent)RowBG", hourRow, CT_BACKDROP)
+        local rowBg = hourRow:GetNamedChild("RowBG") or CreateControl(hourRowName .. "RowBG", hourRow, CT_BACKDROP)
         rowBg:SetAnchorFill()
         local bgColor = (rowIndex % 2 == 0) and COLORS.cellBgAlt or COLORS.cellBg
         rowBg:SetCenterColor(unpack(bgColor))
@@ -133,7 +145,7 @@ function DV:CreateHourGrid()
         rowBg:SetEdgeTexture("", 1, 1, 1, 0)
 
         -- Time label
-        local timeLabel = CreateControl("$(parent)Time", hourRow, CT_LABEL)
+        local timeLabel = hourRow:GetNamedChild("Time") or CreateControl(hourRowName .. "Time", hourRow, CT_LABEL)
         timeLabel:SetDimensions(TIME_COLUMN_WIDTH - 8, HOUR_ROW_HEIGHT)
         timeLabel:SetAnchor(TOPLEFT, hourRow, TOPLEFT, 4, 0)
         timeLabel:SetFont("ZoFontGameSmall")
@@ -154,12 +166,12 @@ function DV:CreateHourGrid()
         timeLabel:SetText(timeText)
 
         -- Event area (clickable)
-        local eventArea = CreateControl("$(parent)Events", hourRow, CT_CONTROL)
+        local eventArea = hourRow:GetNamedChild("Events") or CreateControl(hourRowName .. "Events", hourRow, CT_CONTROL)
         eventArea:SetDimensions(eventAreaWidth, HOUR_ROW_HEIGHT)
         eventArea:SetAnchor(TOPLEFT, hourRow, TOPLEFT, TIME_COLUMN_WIDTH, 0)
 
         -- Event area background
-        local areaBg = CreateControl("$(parent)BG", eventArea, CT_BACKDROP)
+        local areaBg = eventArea:GetNamedChild("BG") or CreateControl(hourRowName .. "EventsBG", eventArea, CT_BACKDROP)
         areaBg:SetAnchorFill()
         areaBg:SetCenterColor(0, 0, 0, 0) -- Transparent
         areaBg:SetEdgeColor(unpack(COLORS.borderNormal))

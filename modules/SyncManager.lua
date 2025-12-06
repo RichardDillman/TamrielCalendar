@@ -43,11 +43,7 @@ SM.pendingRequests = {}     -- Track outstanding requests
 SM.lastSyncTime = {}        -- Per-guild last sync timestamps
 SM.messageQueue = {}        -- Outgoing message queue
 SM.isSending = false        -- Rate limiter flag
-
--- Library references (populated on init)
-SM.LAM2 = nil
-SM.LibSerialize = nil
-SM.LibDeflate = nil
+SM.syncDisabled = true      -- Guild sync is not yet implemented for ESO
 
 -------------------------------------------------
 -- Initialization
@@ -57,114 +53,44 @@ SM.LibDeflate = nil
 function SM:Initialize()
     if self.initialized then return end
 
-    -- Track missing libraries for user notification
-    local missingLibs = {}
-
-    -- Check for required libraries
-    self.LAM2 = LibAddonMessage2
-    self.LibSerialize = LibSerialize
-    self.LibDeflate = LibDeflate
-
-    if not self.LAM2 then
-        table.insert(missingLibs, "LibAddonMessage-2.0")
-    end
-
-    if not self.LibSerialize then
-        table.insert(missingLibs, "LibSerialize")
-    end
-
-    if not self.LibDeflate then
-        table.insert(missingLibs, "LibDeflate")
-    end
-
-    -- If any libraries are missing, notify user and disable sync
-    if #missingLibs > 0 then
-        SM.syncDisabled = true
-        SM.missingLibraries = missingLibs
-        TC:Debug("SyncManager: Missing libraries - " .. table.concat(missingLibs, ", "))
-        -- Don't spam the user on every login, just log it
-        return
-    end
-
-    -- Register message handler
-    self.LAM2:RegisterAddonProtocol(ADDON_PREFIX, function(guildId, data, sender)
-        self:OnMessageReceived(guildId, data, sender)
-    end)
+    -- Guild sync is not yet implemented for ESO
+    -- ESO does not have the same addon messaging libraries as other games
+    -- Future versions may implement sync via guild chat or other ESO APIs
+    SM.syncDisabled = true
+    SM.notImplementedReason = "Guild sync is not yet implemented. Coming in a future update."
 
     self.initialized = true
-    SM.syncDisabled = false
-    TC:Debug("SyncManager: Initialized with LibAddonMessage2")
+    TC:Debug("SyncManager: Initialized (sync not yet available)")
 end
 
 --- Check if guild sync is available
 --- @return boolean available, string|nil reason
 function SM:IsAvailable()
     if self.syncDisabled then
-        local reason = "Guild sync requires: " .. table.concat(self.missingLibraries or {}, ", ")
-        return false, reason
+        return false, self.notImplementedReason or "Guild sync is disabled."
     end
     return self.initialized, nil
 end
 
 -------------------------------------------------
--- Message Serialization
+-- Message Serialization (Placeholder)
+-- TODO: Implement when ESO sync solution is available
 -------------------------------------------------
 
 --- Serialize a message for transmission
 --- @param messageTable table The message to serialize
 --- @return string|nil Encoded string or nil on error
 function SM:SerializeMessage(messageTable)
-    if not self.LibSerialize or not self.LibDeflate then
-        return nil
-    end
-
-    -- Step 1: Serialize to string
-    local serialized = self.LibSerialize:Serialize(messageTable)
-    if not serialized then
-        TC:Debug("SyncManager: Failed to serialize message")
-        return nil
-    end
-
-    -- Step 2: Compress
-    local compressed = self.LibDeflate:CompressDeflate(serialized)
-    if not compressed then
-        TC:Debug("SyncManager: Failed to compress message")
-        return nil
-    end
-
-    -- Step 3: Encode for transmission
-    local encoded = self.LibDeflate:EncodeForPrint(compressed)
-
-    return encoded
+    -- Not implemented - guild sync not yet available for ESO
+    return nil
 end
 
 --- Deserialize a received message
 --- @param encoded string The encoded message
 --- @return table|nil Message table or nil on error
 function SM:DeserializeMessage(encoded)
-    if not self.LibSerialize or not self.LibDeflate then
-        return nil
-    end
-
-    -- Step 1: Decode
-    local compressed = self.LibDeflate:DecodeForPrint(encoded)
-    if not compressed then
-        return nil
-    end
-
-    -- Step 2: Decompress
-    local serialized = self.LibDeflate:DecompressDeflate(compressed)
-    if not serialized then
-        return nil
-    end
-
-    -- Step 3: Deserialize
-    local success, messageTable = self.LibSerialize:Deserialize(serialized)
-    if not success then
-        return nil
-    end
-
-    return messageTable
+    -- Not implemented - guild sync not yet available for ESO
+    return nil
 end
 
 -------------------------------------------------

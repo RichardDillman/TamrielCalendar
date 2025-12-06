@@ -77,8 +77,19 @@ WV.initialized = false
 -- Initialization
 -------------------------------------------------
 
+--- Helper to get or create a control
+local function GetOrCreateControl(name, parent, controlType)
+    local control = _G[name]
+    if not control then
+        control = CreateControl(name, parent, controlType)
+    end
+    return control
+end
+
 --- Initialize the week view UI
 function WV:Initialize()
+    if self.initialized then return end -- Prevent double init
+
     local weekView = TamCalWindowContentWeekView
     if not weekView then
         TC:Debug("WeekView: Cannot find TamCalWindowContentWeekView")
@@ -101,33 +112,34 @@ function WV:CreateDayHeader()
     local dayWidth = (headerWidth - TIME_COLUMN_WIDTH) / DAYS_IN_WEEK
 
     -- Create time column placeholder
-    local timeHeader = CreateControl("TamCalWeekTimeHeader", header, CT_LABEL)
+    local timeHeader = GetOrCreateControl("TamCalWeekTimeHeader", header, CT_LABEL)
     timeHeader:SetDimensions(TIME_COLUMN_WIDTH, HEADER_HEIGHT)
     timeHeader:SetAnchor(TOPLEFT, header, TOPLEFT, 0, 0)
     timeHeader:SetText("")
 
     -- Create day headers
     for i = 1, DAYS_IN_WEEK do
-        local dayHeader = CreateControl("TamCalWeekDayHeader" .. i, header, CT_CONTROL)
+        local dayHeaderName = "TamCalWeekDayHeader" .. i
+        local dayHeader = GetOrCreateControl(dayHeaderName, header, CT_CONTROL)
         dayHeader:SetDimensions(dayWidth, HEADER_HEIGHT)
         dayHeader:SetAnchor(TOPLEFT, header, TOPLEFT, TIME_COLUMN_WIDTH + (i - 1) * dayWidth, 0)
 
         -- Background
-        local bg = CreateControl("$(parent)BG", dayHeader, CT_BACKDROP)
+        local bg = dayHeader:GetNamedChild("BG") or CreateControl(dayHeaderName .. "BG", dayHeader, CT_BACKDROP)
         bg:SetAnchorFill()
         bg:SetCenterColor(unpack(COLORS.headerBg))
         bg:SetEdgeColor(unpack(COLORS.borderNormal))
         bg:SetEdgeTexture("", 1, 1, 1, 0)
 
         -- Day name label (e.g., "Mon")
-        local dayLabel = CreateControl("$(parent)Day", dayHeader, CT_LABEL)
+        local dayLabel = dayHeader:GetNamedChild("Day") or CreateControl(dayHeaderName .. "Day", dayHeader, CT_LABEL)
         dayLabel:SetFont("ZoFontGameSmall")
         dayLabel:SetAnchor(TOP, dayHeader, TOP, 0, 4)
         dayLabel:SetHorizontalAlignment(TEXT_ALIGN_CENTER)
         dayLabel:SetColor(unpack(COLORS.mutedText))
 
         -- Date label (e.g., "Dec 4")
-        local dateLabel = CreateControl("$(parent)Date", dayHeader, CT_LABEL)
+        local dateLabel = dayHeader:GetNamedChild("Date") or CreateControl(dayHeaderName .. "Date", dayHeader, CT_LABEL)
         dateLabel:SetFont("ZoFontGameSmall")
         dateLabel:SetAnchor(TOP, dayLabel, BOTTOM, 0, 2)
         dateLabel:SetHorizontalAlignment(TEXT_ALIGN_CENTER)
@@ -162,12 +174,13 @@ function WV:CreateHourGrid()
         local yOffset = (rowIndex - 1) * HOUR_ROW_HEIGHT
 
         -- Create hour row container
-        local hourRow = CreateControl("TamCalWeekHourRow" .. hour, grid, CT_CONTROL)
+        local hourRowName = "TamCalWeekHourRow" .. hour
+        local hourRow = GetOrCreateControl(hourRowName, grid, CT_CONTROL)
         hourRow:SetDimensions(gridWidth, HOUR_ROW_HEIGHT)
         hourRow:SetAnchor(TOPLEFT, grid, TOPLEFT, 0, yOffset)
 
         -- Time label
-        local timeLabel = CreateControl("$(parent)Time", hourRow, CT_LABEL)
+        local timeLabel = hourRow:GetNamedChild("Time") or CreateControl(hourRowName .. "Time", hourRow, CT_LABEL)
         timeLabel:SetDimensions(TIME_COLUMN_WIDTH, HOUR_ROW_HEIGHT)
         timeLabel:SetAnchor(TOPLEFT, hourRow, TOPLEFT, 0, 0)
         timeLabel:SetFont("ZoFontGameSmall")
@@ -196,12 +209,13 @@ function WV:CreateHourGrid()
         self.dayCells[hour] = {}
 
         for day = 1, DAYS_IN_WEEK do
-            local cell = CreateControl("TamCalWeekCell" .. hour .. "_" .. day, hourRow, CT_CONTROL)
+            local cellName = "TamCalWeekCell" .. hour .. "_" .. day
+            local cell = GetOrCreateControl(cellName, hourRow, CT_CONTROL)
             cell:SetDimensions(dayWidth, HOUR_ROW_HEIGHT)
             cell:SetAnchor(TOPLEFT, hourRow, TOPLEFT, TIME_COLUMN_WIDTH + (day - 1) * dayWidth, 0)
 
             -- Background
-            local bg = CreateControl("$(parent)BG", cell, CT_BACKDROP)
+            local bg = cell:GetNamedChild("BG") or CreateControl(cellName .. "BG", cell, CT_BACKDROP)
             bg:SetAnchorFill()
             -- Alternating row colors
             local bgColor = (rowIndex % 2 == 0) and COLORS.cellBgAlt or COLORS.cellBg

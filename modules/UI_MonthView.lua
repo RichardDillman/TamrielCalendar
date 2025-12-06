@@ -79,6 +79,8 @@ MV.activePips = {}      -- Currently visible pips
 
 --- Initialize the month view UI
 function MV:Initialize()
+    if self.initialized then return end -- Prevent double init
+
     local monthView = TamCalWindowContentMonthView
     if not monthView then
         TC:Debug("MonthView: Cannot find TamCalWindowContentMonthView")
@@ -87,6 +89,7 @@ function MV:Initialize()
 
     self:CreateWeekdayHeader()
     self:CreateDayCellPool()
+    self.initialized = true
 
     TC:Debug("MonthView: Initialized")
 end
@@ -104,7 +107,12 @@ function MV:CreateWeekdayHeader()
     local cellWidth = header:GetWidth() / GRID_COLS
 
     for i = 1, GRID_COLS do
-        local label = CreateControl("TamCalWeekdayLabel" .. i, header, CT_LABEL)
+        local controlName = "TamCalWeekdayLabel" .. i
+        -- Check if control already exists
+        local label = _G[controlName]
+        if not label then
+            label = CreateControl(controlName, header, CT_LABEL)
+        end
 
         label:SetDimensions(cellWidth, 24)
         label:SetAnchor(TOPLEFT, header, TOPLEFT, (i - 1) * cellWidth, 0)
@@ -134,11 +142,16 @@ function MV:CreateDayCellPool()
         local row = math.floor((i - 1) / GRID_COLS)
         local col = (i - 1) % GRID_COLS
 
-        local cell = CreateControlFromVirtual(
-            "TamCalDayCell" .. i,
-            grid,
-            "TamCal_DayCell_Template"
-        )
+        local controlName = "TamCalDayCell" .. i
+        -- Check if control already exists
+        local cell = _G[controlName]
+        if not cell then
+            cell = CreateControlFromVirtual(
+                controlName,
+                grid,
+                "TamCal_DayCell_Template"
+            )
+        end
 
         cell:SetDimensions(cellWidth - gap, cellHeight - gap)
         cell:SetAnchor(TOPLEFT, grid, TOPLEFT, col * cellWidth, row * cellHeight)
