@@ -462,11 +462,9 @@ function TC:OnDayCellClicked(cell, button)
     if button ~= MOUSE_BUTTON_INDEX_LEFT then return end
     if not cell.dayData then return end
 
-    -- Select this date
+    -- Select this date and switch to Day view
     TC:SelectDate(cell.timestamp)
-
-    -- If double-click or has events, could switch to day view
-    -- For now, just select
+    TC:SetView(TC.VIEW_MODES.DAY)
     PlaySound(SOUNDS.POSITIVE_CLICK)
 end
 

@@ -435,11 +435,12 @@ function TC:NextMonth()
     self:GoToMonth(year, month)
 end
 
---- Navigate to today
+--- Navigate to today and switch to Day view
 function TC:GoToToday()
     local t = os.date("*t", GetTimeStamp())
     self:GoToMonth(t.year, t.month)
     self.selectedDate = DH.GetTodayMidnight()
+    self:SetView(self.VIEW_MODES.DAY)
 end
 
 --- Select a specific date
@@ -493,102 +494,169 @@ function TC:ShowEventForm(event)
             contentDesc:SetText(event and event.description or "")
         end
 
-        local use24Hour = self:GetPreference("use24HourTime")
-
+        -- Set time dropdown values
         if event then
-            self.eventFormStartTime = event.startTime
-            self.eventFormEndTime = event.endTime
+            -- Convert event start time to 12-hour format
+            local hour12, minute, ampm = self:TimestampTo12Hour(event.startTime)
+            self:SetTimeDropdowns(hour12, minute, ampm)
+            self.eventFormDate = DH.StartOfDay(event.startTime)
         else
-            -- Default to selected date at 7pm-9pm
-            local baseDate = self.selectedDate or DH.GetTodayMidnight()
-            self.eventFormStartTime = DH.SetTime(baseDate, 19, 0)
-            self.eventFormEndTime = DH.SetTime(baseDate, 21, 0)
+            -- Default to 7:00 PM on selected date
+            self:SetTimeDropdowns(7, 0, "PM")
+            self.eventFormDate = self.selectedDate or DH.GetTodayMidnight()
         end
-
-        -- Update the time displays
-        self:UpdateEventFormTimeDisplays()
 
         TamCalEventForm:SetHidden(false)
     end
 end
 
---- Update the time displays in the event form
-function TC:UpdateEventFormTimeDisplays()
-    local use24Hour = self:GetPreference("use24HourTime")
+-------------------------------------------------
+-- Time Dropdown State
+-------------------------------------------------
 
-    -- Start date display (just the date)
-    local startDateDisplay = TamCalEventFormContentStartDateDisplay
-    if startDateDisplay then
-        startDateDisplay:SetText(DH.FormatDate(self.eventFormStartTime))
+TC.eventFormHour = 7      -- 1-12 for 12-hour format
+TC.eventFormMinute = 0    -- 0, 15, 30, 45
+TC.eventFormAmPm = "PM"   -- "AM" or "PM"
+
+--- Initialize the time dropdowns in the event form
+function TC:InitializeTimeDropdowns()
+    -- Hour Dropdown (1-12)
+    local hourDropdown = TamCalEventFormContentTimeRowHourDropdown
+    if hourDropdown then
+        local comboBox = ZO_ComboBox_ObjectFromContainer(hourDropdown)
+        if not comboBox then
+            comboBox = ZO_ComboBox:New(hourDropdown)
+        end
+        comboBox:SetSortsItems(false)
+        comboBox:ClearItems()
+
+        for h = 1, 12 do
+            local hourStr = tostring(h)
+            local entry = comboBox:CreateItemEntry(hourStr, function()
+                TC.eventFormHour = h
+            end)
+            comboBox:AddItem(entry)
+        end
+
+        TC.hourComboBox = comboBox
     end
 
-    -- Start time display (just the time)
-    local startTimeDisplay = TamCalEventFormContentStartTimeDisplay
-    if startTimeDisplay then
-        startTimeDisplay:SetText(DH.FormatTime(self.eventFormStartTime, use24Hour))
+    -- Minute Dropdown (00, 15, 30, 45)
+    local minuteDropdown = TamCalEventFormContentTimeRowMinuteDropdown
+    if minuteDropdown then
+        local comboBox = ZO_ComboBox_ObjectFromContainer(minuteDropdown)
+        if not comboBox then
+            comboBox = ZO_ComboBox:New(minuteDropdown)
+        end
+        comboBox:SetSortsItems(false)
+        comboBox:ClearItems()
+
+        for _, m in ipairs({0, 15, 30, 45}) do
+            local minStr = string.format("%02d", m)
+            local entry = comboBox:CreateItemEntry(minStr, function()
+                TC.eventFormMinute = m
+            end)
+            comboBox:AddItem(entry)
+        end
+
+        TC.minuteComboBox = comboBox
     end
 
-    -- End date display
-    local endDateDisplay = TamCalEventFormContentEndDateDisplay
-    if endDateDisplay then
-        endDateDisplay:SetText(DH.FormatDate(self.eventFormEndTime))
-    end
+    -- AM/PM Dropdown
+    local ampmDropdown = TamCalEventFormContentTimeRowAmPmDropdown
+    if ampmDropdown then
+        local comboBox = ZO_ComboBox_ObjectFromContainer(ampmDropdown)
+        if not comboBox then
+            comboBox = ZO_ComboBox:New(ampmDropdown)
+        end
+        comboBox:SetSortsItems(false)
+        comboBox:ClearItems()
 
-    -- End time display
-    local endTimeDisplay = TamCalEventFormContentEndTimeDisplay
-    if endTimeDisplay then
-        endTimeDisplay:SetText(DH.FormatTime(self.eventFormEndTime, use24Hour))
+        for _, period in ipairs({"AM", "PM"}) do
+            local entry = comboBox:CreateItemEntry(period, function()
+                TC.eventFormAmPm = period
+            end)
+            comboBox:AddItem(entry)
+        end
+
+        TC.ampmComboBox = comboBox
     end
 end
 
---- Adjust start time by hours
---- @param delta number Hours to add (negative to subtract)
-function TC:AdjustStartTime(delta)
-    local newTime = self.eventFormStartTime + (delta * DH.SECONDS_PER_HOUR)
-    self.eventFormStartTime = newTime
+--- Set the time dropdowns to a specific time
+--- @param hour number Hour (1-12)
+--- @param minute number Minute (0, 15, 30, 45)
+--- @param ampm string "AM" or "PM"
+function TC:SetTimeDropdowns(hour, minute, ampm)
+    self.eventFormHour = hour
+    self.eventFormMinute = minute
+    self.eventFormAmPm = ampm
 
-    -- If start time moved past end time, adjust end time
-    if self.eventFormStartTime >= self.eventFormEndTime then
-        self.eventFormEndTime = self.eventFormStartTime + DH.SECONDS_PER_HOUR
+    -- Select in hour dropdown
+    if self.hourComboBox then
+        local hourIndex = hour  -- hour 1 = index 1
+        self.hourComboBox:SelectItemByIndex(hourIndex)
     end
 
-    self:UpdateEventFormTimeDisplays()
-end
+    -- Select in minute dropdown
+    if self.minuteComboBox then
+        local minuteIndex = 1
+        if minute == 15 then minuteIndex = 2
+        elseif minute == 30 then minuteIndex = 3
+        elseif minute == 45 then minuteIndex = 4
+        end
+        self.minuteComboBox:SelectItemByIndex(minuteIndex)
+    end
 
---- Adjust end time by hours
---- @param delta number Hours to add (negative to subtract)
-function TC:AdjustEndTime(delta)
-    local newTime = self.eventFormEndTime + (delta * DH.SECONDS_PER_HOUR)
-
-    -- Don't allow end time before start time
-    if newTime > self.eventFormStartTime then
-        self.eventFormEndTime = newTime
-        self:UpdateEventFormTimeDisplays()
+    -- Select in AM/PM dropdown
+    if self.ampmComboBox then
+        local ampmIndex = (ampm == "AM") and 1 or 2
+        self.ampmComboBox:SelectItemByIndex(ampmIndex)
     end
 end
 
---- Handle start hour decrease
-function TC:OnStartHourDown()
-    self:AdjustStartTime(-1)
-    PlaySound(SOUNDS.POSITIVE_CLICK)
+--- Convert dropdown selections to 24-hour time
+--- @return number hour24 24-hour format hour (0-23)
+--- @return number minute Minute value
+function TC:GetTimeFromDropdowns()
+    local hour12 = self.eventFormHour
+    local minute = self.eventFormMinute
+    local ampm = self.eventFormAmPm
+
+    local hour24
+    if ampm == "AM" then
+        hour24 = (hour12 == 12) and 0 or hour12
+    else -- PM
+        hour24 = (hour12 == 12) and 12 or (hour12 + 12)
+    end
+
+    return hour24, minute
 end
 
---- Handle start hour increase
-function TC:OnStartHourUp()
-    self:AdjustStartTime(1)
-    PlaySound(SOUNDS.POSITIVE_CLICK)
-end
+--- Convert a timestamp to 12-hour format for dropdowns
+--- @param timestamp number Unix timestamp
+--- @return number hour12 Hour 1-12
+--- @return number minute Minute rounded to 15-min intervals
+--- @return string ampm "AM" or "PM"
+function TC:TimestampTo12Hour(timestamp)
+    local t = os.date("*t", timestamp)
+    local hour24 = t.hour
+    local minute = t.min
 
---- Handle end hour decrease
-function TC:OnEndHourDown()
-    self:AdjustEndTime(-1)
-    PlaySound(SOUNDS.POSITIVE_CLICK)
-end
+    -- Round minute to nearest 15
+    minute = math.floor((minute + 7) / 15) * 15
+    if minute >= 60 then
+        minute = 0
+        hour24 = hour24 + 1
+        if hour24 >= 24 then hour24 = 0 end
+    end
 
---- Handle end hour increase
-function TC:OnEndHourUp()
-    self:AdjustEndTime(1)
-    PlaySound(SOUNDS.POSITIVE_CLICK)
+    -- Convert to 12-hour
+    local ampm = (hour24 < 12) and "AM" or "PM"
+    local hour12 = hour24 % 12
+    if hour12 == 0 then hour12 = 12 end
+
+    return hour12, minute, ampm
 end
 
 --- Handle settings button click
@@ -602,117 +670,6 @@ function TC:OnSettingsClicked()
     end
 end
 
--------------------------------------------------
--- Event Form Dropdowns
--------------------------------------------------
-
--- Category options
-TC.CATEGORY_LIST = {"Personal", "Raid", "Party", "Training", "Meeting"}
-
--- Trial options (for Raid category)
-TC.TRIAL_LIST = {
-    "Any Trial",
-    "Aetherian Archive",
-    "Cloudrest",
-    "Dreadsail Reef",
-    "Hel Ra Citadel",
-    "Kyne's Aegis",
-    "Lucent Citadel",
-    "Maw of Lorkhaj",
-    "Rockgrove",
-    "Sanctum Ophidia",
-    "Sunspire",
-    "Asylum Sanctorium",
-    "Halls of Fabrication",
-}
-
--- Difficulty modifiers
-TC.MODIFIER_LIST = {"Normal", "Veteran", "Veteran HM"}
-
---- Initialize the event form dropdowns
-function TC:InitializeEventFormDropdowns()
-    -- Category Dropdown
-    local categoryDropdown = TamCalEventFormContentCategoryDropdown
-    if categoryDropdown then
-        local comboBox = ZO_ComboBox_ObjectFromContainer(categoryDropdown)
-        if not comboBox then
-            comboBox = ZO_ComboBox:New(categoryDropdown)
-        end
-        comboBox:SetSortsItems(false)
-        comboBox:ClearItems()
-
-        for _, category in ipairs(TC.CATEGORY_LIST) do
-            local entry = comboBox:CreateItemEntry(category, function()
-                TC.eventFormCategory = category
-                TC:OnCategoryChanged(category)
-            end)
-            comboBox:AddItem(entry)
-        end
-
-        comboBox:SelectFirstItem()
-        TC.categoryComboBox = comboBox
-    end
-
-    -- Trial Dropdown
-    local trialDropdown = TamCalEventFormContentTrialDropdown
-    if trialDropdown then
-        local comboBox = ZO_ComboBox_ObjectFromContainer(trialDropdown)
-        if not comboBox then
-            comboBox = ZO_ComboBox:New(trialDropdown)
-        end
-        comboBox:SetSortsItems(false)
-        comboBox:ClearItems()
-
-        for _, trial in ipairs(TC.TRIAL_LIST) do
-            local entry = comboBox:CreateItemEntry(trial, function()
-                TC.eventFormTrial = trial
-            end)
-            comboBox:AddItem(entry)
-        end
-
-        comboBox:SelectFirstItem()
-        TC.trialComboBox = comboBox
-    end
-
-    -- Modifier Dropdown
-    local modifierDropdown = TamCalEventFormContentModifierDropdown
-    if modifierDropdown then
-        local comboBox = ZO_ComboBox_ObjectFromContainer(modifierDropdown)
-        if not comboBox then
-            comboBox = ZO_ComboBox:New(modifierDropdown)
-        end
-        comboBox:SetSortsItems(false)
-        comboBox:ClearItems()
-
-        for _, modifier in ipairs(TC.MODIFIER_LIST) do
-            local entry = comboBox:CreateItemEntry(modifier, function()
-                TC.eventFormModifier = modifier
-            end)
-            comboBox:AddItem(entry)
-        end
-
-        comboBox:SelectFirstItem()
-        TC.modifierComboBox = comboBox
-    end
-end
-
---- Called when category changes to show/hide raid-specific fields
---- @param category string The selected category
-function TC:OnCategoryChanged(category)
-    local isRaid = (category == "Raid")
-
-    -- Show/hide trial dropdown
-    local trialLabel = TamCalEventFormContentTrialLabel
-    local trialDropdown = TamCalEventFormContentTrialDropdown
-    if trialLabel then trialLabel:SetHidden(not isRaid) end
-    if trialDropdown then trialDropdown:SetHidden(not isRaid) end
-
-    -- Show/hide modifier dropdown
-    local modifierLabel = TamCalEventFormContentModifierLabel
-    local modifierDropdown = TamCalEventFormContentModifierDropdown
-    if modifierLabel then modifierLabel:SetHidden(not isRaid) end
-    if modifierDropdown then modifierDropdown:SetHidden(not isRaid) end
-end
 
 --- Hide the event form
 function TC:HideEventForm()
@@ -735,22 +692,20 @@ function TC:OnEventFormSave()
         return
     end
 
-    -- Get selected category (default to Personal)
-    local category = self.eventFormCategory or "Personal"
+    -- Get time from dropdowns
+    local hour24, minute = self:GetTimeFromDropdowns()
+    local baseDate = self.eventFormDate or DH.GetTodayMidnight()
+    local startTime = DH.SetTime(baseDate, hour24, minute)
+    -- Default event duration: 2 hours
+    local endTime = startTime + (2 * DH.SECONDS_PER_HOUR)
 
     local eventData = {
         title = title,
         description = descInput and descInput:GetText() or "",
-        startTime = self.eventFormStartTime,
-        endTime = self.eventFormEndTime,
-        category = category,
+        startTime = startTime,
+        endTime = endTime,
+        category = "Personal",  -- Simplified: all events are personal for now
     }
-
-    -- Add trial and modifier for Raid events
-    if category == "Raid" then
-        eventData.trial = self.eventFormTrial
-        eventData.modifier = self.eventFormModifier
-    end
 
     local EM = TC.EventManager
     local success, err
@@ -893,7 +848,7 @@ local function OnPlayerActivated()
 
     -- Initialize dropdowns after a short delay to ensure UI is ready
     zo_callLater(function()
-        TC:InitializeEventFormDropdowns()
+        TC:InitializeTimeDropdowns()
     end, 250)
 end
 
