@@ -502,10 +502,12 @@ function DV:UpdateSidebar()
     local details = TamCalWindowContentDayViewSidebarDetails
     if not details then return end
 
-    -- Clear existing content
-    local children = {details:GetChildren()}
-    for _, child in ipairs(children) do
-        child:SetHidden(true)
+    -- Clear existing content (ESO uses GetNumChildren/GetChild, not GetChildren)
+    for i = 1, details:GetNumChildren() do
+        local child = details:GetChild(i)
+        if child then
+            child:SetHidden(true)
+        end
     end
 
     -- If we have a selected event or active events, show the first one

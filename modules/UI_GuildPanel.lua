@@ -67,6 +67,7 @@ function GP:Initialize()
     if self.initialized then return end
 
     self:CreateGuildTags()
+    self:CreateLegend()
     self:RefreshGuilds()
 
     self.initialized = true
@@ -75,8 +76,11 @@ end
 
 --- Create guild tag controls
 function GP:CreateGuildTags()
-    local tagsContainer = TamCalWindowGuildPanelTags
-    if not tagsContainer then return end
+    local tagsContainer = TamCalWindowContentLegendGuildItems
+    if not tagsContainer then
+        TC:Debug("GuildPanel: GuildItems container not found (TamCalWindowContentLegendGuildItems)")
+        return
+    end
 
     local xOffset = 0
 
@@ -133,8 +137,11 @@ end
 
 --- Create category legend
 function GP:CreateLegend()
-    local legend = TamCalWindowLegend
-    if not legend then return end
+    local legend = TamCalWindowContentLegend
+    if not legend then
+        TC:Debug("GuildPanel: Legend control not found (TamCalWindowContentLegend)")
+        return
+    end
 
     local legendWidth = legend:GetWidth()
     local itemWidth = legendWidth / #CATEGORY_ORDER
