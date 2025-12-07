@@ -250,7 +250,7 @@
                             </Controls>
                         </Button>
 
-                        <!-- Next Month Button -->
+                        <!-- Next Button -->
                         <Button name="$(parent)NextBtn" inherits="ZO_DefaultButton">
                             <Dimensions x="60" y="30"/>
                             <Anchor point="LEFT" to="$(parent)TodayBtn" relativeTo="RIGHT" offsetX="4"/>
@@ -259,6 +259,20 @@
                             </OnClicked>
                             <Controls>
                                 <Label name="$(parent)Label" font="ZoFontGame" text="Next &gt;" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                    <AnchorFill/>
+                                </Label>
+                            </Controls>
+                        </Button>
+
+                        <!-- Month View Button -->
+                        <Button name="$(parent)MonthBtn" inherits="ZO_DefaultButton">
+                            <Dimensions x="60" y="30"/>
+                            <Anchor point="LEFT" to="$(parent)NextBtn" relativeTo="RIGHT" offsetX="8"/>
+                            <OnClicked>
+                                TamrielCalendar:OnMonthViewClicked()
+                            </OnClicked>
+                            <Controls>
+                                <Label name="$(parent)Label" font="ZoFontGame" text="Month" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>

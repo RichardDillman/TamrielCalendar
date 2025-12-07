@@ -443,6 +443,12 @@ function TC:GoToToday()
     self:SetView(self.VIEW_MODES.DAY)
 end
 
+--- Switch to Month view
+function TC:OnMonthViewClicked()
+    self:SetView(self.VIEW_MODES.MONTH)
+    PlaySound(SOUNDS.POSITIVE_CLICK)
+end
+
 --- Select a specific date
 --- @param timestamp number Unix timestamp for the date
 function TC:SelectDate(timestamp)
