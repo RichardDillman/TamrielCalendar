@@ -411,10 +411,9 @@
 
                         <!-- Guild items container (populated dynamically) -->
                         <Control name="$(parent)GuildItems">
+                            <Dimensions y="24"/>
                             <Anchor point="LEFT" to="$(parent)PersonalItem" relativeTo="RIGHT" offsetX="12"/>
                             <Anchor point="RIGHT"/>
-                            <Anchor point="TOP"/>
-                            <Anchor point="BOTTOM"/>
                         </Control>
                     </Controls>
                 </Control>
