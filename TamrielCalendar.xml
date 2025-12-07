@@ -171,17 +171,16 @@
                 </Backdrop>
 
                 <!-- ============================================ -->
-                <!-- ROW 1: Title + Close                         -->
+                <!-- ROW 1: Title + Close (Y: 0-44)               -->
                 <!-- ============================================ -->
                 <Control name="$(parent)Header">
-                    <Dimensions y="44"/>
+                    <Dimensions x="720" y="44"/>
                     <Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
-                    <Anchor point="TOPRIGHT" offsetX="0" offsetY="0"/>
 
                     <Controls>
                         <!-- Title - Centered -->
                         <Label name="$(parent)Title" font="ZoFontWinH1" color="D4AF37" horizontalAlignment="CENTER" verticalAlignment="CENTER" text="Tamriel Calendar">
-                            <Anchor point="CENTER" offsetY="2"/>
+                            <Anchor point="CENTER"/>
                         </Label>
 
                         <!-- Close Button - Far Right -->
@@ -195,12 +194,11 @@
                 </Control>
 
                 <!-- ============================================ -->
-                <!-- ROW 2: [Sync] [<prev] Month Year [Today] [next>] [+New Event] -->
+                <!-- ROW 2: Nav buttons (Y: 48-88)                -->
                 <!-- ============================================ -->
                 <Control name="$(parent)NavBar">
-                    <Dimensions y="40"/>
-                    <Anchor point="TOPLEFT" to="$(parent)Header" relativeTo="BOTTOMLEFT" offsetX="8"/>
-                    <Anchor point="TOPRIGHT" to="$(parent)Header" relativeTo="BOTTOMRIGHT" offsetX="-8"/>
+                    <Dimensions x="704" y="40"/>
+                    <Anchor point="TOPLEFT" offsetX="8" offsetY="48"/>
 
                     <Controls>
                         <!-- Sync Button -->
@@ -295,11 +293,11 @@
                 </Control>
 
                 <!-- ============================================ -->
-                <!-- CALENDAR GRID AREA                           -->
+                <!-- CALENDAR GRID AREA (Y: 96 to 510)            -->
                 <!-- ============================================ -->
                 <Control name="$(parent)Content">
-                    <Anchor point="TOPLEFT" to="$(parent)NavBar" relativeTo="BOTTOMLEFT" offsetX="0" offsetY="8"/>
-                    <Anchor point="BOTTOMRIGHT" offsetX="-8" offsetY="-50"/>
+                    <Dimensions x="704" y="414"/>
+                    <Anchor point="TOPLEFT" offsetX="8" offsetY="96"/>
 
                     <Controls>
                         <!-- Month View -->
@@ -389,12 +387,11 @@
                 </Control>
 
                 <!-- ============================================ -->
-                <!-- LEGEND ROW (Personal + Guild colors)         -->
+                <!-- LEGEND ROW (Y: 516-552)                      -->
                 <!-- ============================================ -->
                 <Control name="$(parent)Legend">
-                    <Dimensions y="36"/>
-                    <Anchor point="BOTTOMLEFT" offsetX="8"/>
-                    <Anchor point="BOTTOMRIGHT" offsetX="-8"/>
+                    <Dimensions x="704" y="36"/>
+                    <Anchor point="TOPLEFT" offsetX="8" offsetY="516"/>
 
                     <Controls>
                         <!-- Personal events icon -->
