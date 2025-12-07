@@ -262,20 +262,6 @@
                             </Controls>
                         </Button>
 
-                        <!-- Month View Button -->
-                        <Button name="$(parent)MonthBtn" inherits="ZO_DefaultButton">
-                            <Dimensions x="60" y="30"/>
-                            <Anchor point="LEFT" to="$(parent)NextBtn" relativeTo="RIGHT" offsetX="8"/>
-                            <OnClicked>
-                                TamrielCalendar:OnMonthViewClicked()
-                            </OnClicked>
-                            <Controls>
-                                <Label name="$(parent)Label" font="ZoFontGame" text="Month" horizontalAlignment="CENTER" verticalAlignment="CENTER">
-                                    <AnchorFill/>
-                                </Label>
-                            </Controls>
-                        </Button>
-
                         <!-- New Event Button - Far Right -->
                         <Button name="$(parent)NewEventBtn" inherits="ZO_DefaultButton">
                             <Dimensions x="90" y="30"/>
@@ -285,6 +271,20 @@
                             </OnClicked>
                             <Controls>
                                 <Label name="$(parent)Label" font="ZoFontGame" text="+ New Event" horizontalAlignment="CENTER" verticalAlignment="CENTER">
+                                    <AnchorFill/>
+                                </Label>
+                            </Controls>
+                        </Button>
+
+                        <!-- Month View Button - Anchored from right side -->
+                        <Button name="$(parent)MonthBtn" inherits="ZO_DefaultButton">
+                            <Dimensions x="60" y="30"/>
+                            <Anchor point="RIGHT" to="$(parent)NewEventBtn" relativeTo="LEFT" offsetX="-8"/>
+                            <OnClicked>
+                                TamrielCalendar:OnMonthViewClicked()
+                            </OnClicked>
+                            <Controls>
+                                <Label name="$(parent)Label" font="ZoFontGame" text="Month" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <AnchorFill/>
                                 </Label>
                             </Controls>
@@ -349,22 +349,21 @@
                             <Controls>
                                 <!-- Day Header -->
                                 <Label name="$(parent)DayHeader" font="ZoFontWinH3" horizontalAlignment="LEFT" verticalAlignment="CENTER">
-                                    <Dimensions y="32"/>
-                                    <Anchor point="TOPLEFT"/>
-                                    <Anchor point="TOPRIGHT"/>
+                                    <Dimensions x="500" y="32"/>
+                                    <Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
                                 </Label>
 
-                                <!-- Schedule Area -->
+                                <!-- Schedule Area - explicitly positioned below header -->
                                 <Control name="$(parent)Schedule">
-                                    <Anchor point="TOPLEFT" to="$(parent)DayHeader" relativeTo="BOTTOMLEFT" offsetY="4"/>
-                                    <Anchor point="BOTTOMRIGHT" offsetX="-200"/>
+                                    <Anchor point="TOPLEFT" offsetX="0" offsetY="36"/>
+                                    <Anchor point="BOTTOMRIGHT" offsetX="-200" offsetY="0"/>
                                 </Control>
 
-                                <!-- Sidebar -->
+                                <!-- Sidebar - explicitly positioned -->
                                 <Control name="$(parent)Sidebar">
                                     <Dimensions x="190"/>
-                                    <Anchor point="TOPRIGHT" to="$(parent)DayHeader" relativeTo="BOTTOMRIGHT" offsetY="4"/>
-                                    <Anchor point="BOTTOMRIGHT"/>
+                                    <Anchor point="TOPRIGHT" offsetX="0" offsetY="36"/>
+                                    <Anchor point="BOTTOMRIGHT" offsetX="0" offsetY="0"/>
 
                                     <Controls>
                                         <Backdrop name="$(parent)BG" inherits="ZO_ThinBackdrop" tier="LOW">
@@ -372,11 +371,13 @@
                                         </Backdrop>
 
                                         <Label name="$(parent)Title" font="ZoFontWinH4" text="Event Details">
+                                            <Dimensions y="20"/>
                                             <Anchor point="TOPLEFT" offsetX="8" offsetY="8"/>
+                                            <Anchor point="TOPRIGHT" offsetX="-8"/>
                                         </Label>
 
                                         <Control name="$(parent)Details">
-                                            <Anchor point="TOPLEFT" to="$(parent)Title" relativeTo="BOTTOMLEFT" offsetY="8"/>
+                                            <Anchor point="TOPLEFT" offsetX="8" offsetY="32"/>
                                             <Anchor point="BOTTOMRIGHT" offsetX="-8" offsetY="-8"/>
                                         </Control>
                                     </Controls>
@@ -507,34 +508,34 @@
 
                             <Controls>
                                 <!-- Hour Dropdown -->
-                                <Control name="$(parent)HourDropdown">
+                                <ComboBox name="$(parent)HourDropdown" inherits="ZO_ComboBox">
                                     <Dimensions x="70" y="30"/>
                                     <Anchor point="LEFT"/>
-                                </Control>
+                                </ComboBox>
 
                                 <!-- Colon separator -->
                                 <Label name="$(parent)Sep1" font="ZoFontWinH3" text=":" color="C5A552" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <Dimensions x="16" y="30"/>
-                                    <Anchor point="LEFT" to="$(parent)HourDropdown" relativeTo="RIGHT" offsetX="2"/>
+                                    <Anchor point="LEFT" to="$(parent)HourDropdown" relativeTo="RIGHT" offsetX="4"/>
                                 </Label>
 
                                 <!-- Minute Dropdown -->
-                                <Control name="$(parent)MinuteDropdown">
+                                <ComboBox name="$(parent)MinuteDropdown" inherits="ZO_ComboBox">
                                     <Dimensions x="70" y="30"/>
-                                    <Anchor point="LEFT" to="$(parent)Sep1" relativeTo="RIGHT" offsetX="2"/>
-                                </Control>
+                                    <Anchor point="LEFT" to="$(parent)Sep1" relativeTo="RIGHT" offsetX="4"/>
+                                </ComboBox>
 
                                 <!-- Colon separator -->
                                 <Label name="$(parent)Sep2" font="ZoFontWinH3" text=":" color="C5A552" horizontalAlignment="CENTER" verticalAlignment="CENTER">
                                     <Dimensions x="16" y="30"/>
-                                    <Anchor point="LEFT" to="$(parent)MinuteDropdown" relativeTo="RIGHT" offsetX="2"/>
+                                    <Anchor point="LEFT" to="$(parent)MinuteDropdown" relativeTo="RIGHT" offsetX="4"/>
                                 </Label>
 
                                 <!-- AM/PM Dropdown -->
-                                <Control name="$(parent)AmPmDropdown">
+                                <ComboBox name="$(parent)AmPmDropdown" inherits="ZO_ComboBox">
                                     <Dimensions x="65" y="30"/>
-                                    <Anchor point="LEFT" to="$(parent)Sep2" relativeTo="RIGHT" offsetX="2"/>
-                                </Control>
+                                    <Anchor point="LEFT" to="$(parent)Sep2" relativeTo="RIGHT" offsetX="4"/>
+                                </ComboBox>
                             </Controls>
                         </Control>
 
